@@ -1,0 +1,173 @@
+{
+  "purpose": "Pre-recorded arm-order schedule required by BENCHMARK.md §5 (procedure) and §5a (per-task checklist item: \"Arm order for this task follows the pre-recorded coin-flip schedule\").",
+  "generatedAtUtc": "2026-08-07T22:09:35.147Z",
+  "benchmarkSha256": "72d09391d09a91db1083420b293968c8c5c87d3ee3ead92ad0af00734557562f",
+  "pluginCommit": "70ccee139cd0da64c886c5af9c3d16f82a6e5226",
+  "method": {
+    "rng": "node:crypto.randomBytes (CSPRNG), one byte per task, drawn once",
+    "mapping": "byte % 2 === 0 -> Arm A first; odd -> Arm B first",
+    "entropyHex": "338d40a2e7f8d7401fb5ced243a602a7884d337f03b71c1f6f",
+    "note": "entropyHex is the raw draw; re-deriving first-arm from these bytes reproduces this schedule exactly. Unseeded by design - the draw is recorded, not reproducible from a seed."
+  },
+  "armDefinitions": {
+    "A": "Self-critique baseline (BENCHMARK.md §1) - Claude-generated critiques injected via COUNCIL_MOCK_CRITIQUE",
+    "B": "Council Review mode (BENCHMARK.md §1) - Codex critic via the council plugin"
+  },
+  "taskIdNote": "Appendix A primary set is 25 tasks but the ids are not literally T01..T25: T19 and T20 were struck in the pre-freeze substitution record and replaced by T19r and T20r. This schedule covers the 25 ids as they actually appear in Appendix A.",
+  "balance": {
+    "aFirst": 10,
+    "bFirst": 15
+  },
+  "schedule": [
+    {
+      "task": "T01",
+      "byte": 51,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T02",
+      "byte": 141,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T03",
+      "byte": 64,
+      "first": "A",
+      "second": "B"
+    },
+    {
+      "task": "T04",
+      "byte": 162,
+      "first": "A",
+      "second": "B"
+    },
+    {
+      "task": "T05",
+      "byte": 231,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T06",
+      "byte": 248,
+      "first": "A",
+      "second": "B"
+    },
+    {
+      "task": "T07",
+      "byte": 215,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T08",
+      "byte": 64,
+      "first": "A",
+      "second": "B"
+    },
+    {
+      "task": "T09",
+      "byte": 31,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T10",
+      "byte": 181,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T11",
+      "byte": 206,
+      "first": "A",
+      "second": "B"
+    },
+    {
+      "task": "T12",
+      "byte": 210,
+      "first": "A",
+      "second": "B"
+    },
+    {
+      "task": "T13",
+      "byte": 67,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T14",
+      "byte": 166,
+      "first": "A",
+      "second": "B"
+    },
+    {
+      "task": "T15",
+      "byte": 2,
+      "first": "A",
+      "second": "B"
+    },
+    {
+      "task": "T16",
+      "byte": 167,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T17",
+      "byte": 136,
+      "first": "A",
+      "second": "B"
+    },
+    {
+      "task": "T18",
+      "byte": 77,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T21",
+      "byte": 51,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T22",
+      "byte": 127,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T23",
+      "byte": 3,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T24",
+      "byte": 183,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T25",
+      "byte": 28,
+      "first": "A",
+      "second": "B"
+    },
+    {
+      "task": "T19r",
+      "byte": 31,
+      "first": "B",
+      "second": "A"
+    },
+    {
+      "task": "T20r",
+      "byte": 111,
+      "first": "B",
+      "second": "A"
+    }
+  ]
+}
