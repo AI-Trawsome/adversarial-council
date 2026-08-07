@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CouncilMessage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["round", "side", "findings", "responses"],
+  "properties": {
+    "round": { "type": "integer", "minimum": 1 },
+    "side": { "type": "string", "enum": ["codex", "claude"] },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "claimant", "claim", "evidence", "support_level", "severity", "confidence", "status"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "claimant": { "type": "string", "enum": ["codex", "claude"] },
+          "claim": { "type": "string", "minLength": 1 },
+          "evidence": {
+            "type": "string",
+            "description": "Checkable citation: file:line-range, command output, doc section. Empty or uncheckable evidence causes the runner to force support_level to 'unsupported'."
+          },
+          "support_level": { "type": "string", "enum": ["unsupported", "weak", "moderate", "strong"] },
+          "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "status": { "type": "string", "enum": ["open", "accepted", "partially-accepted", "rejected", "withdrawn"] },
+          "deciding_evidence": {
+            "type": "string",
+            "description": "What concrete evidence would settle this finding. Required at close for any finding still rejected/disputed."
+          }
+        }
+      }
+    },
+    "responses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "verdict", "reason"],
+        "properties": {
+          "finding_id": { "type": "string", "minLength": 1 },
+          "verdict": { "type": "string", "enum": ["accept", "partial", "reject"] },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "accept: what evidence changed your mind. partial: which components are accepted vs rejected, and why. reject: why the claim fails."
+          },
+          "evidence": {
+            "type": "string",
+            "description": "Checkable counter-evidence. REQUIRED by the runner when verdict is 'reject'."
+          },
+          "contest_support_level": {
+            "type": "string",
+            "enum": ["unsupported", "weak", "moderate", "strong"],
+            "description": "Optional: contest the opponent's self-assigned support_level for this finding."
+          },
+          "proposed_fix": {
+            "type": "string",
+            "description": "Optional concrete fix proposal for accepted findings. Proposal only; Review mode never applies changes."
+          },
+          "deciding_evidence": {
+            "type": "string",
+            "description": "When maintaining a dispute (verdict 'reject'/'partial' on your own contested finding, or rejecting the opponent's), name the concrete evidence that would settle it."
+          }
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

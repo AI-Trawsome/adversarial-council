@@ -1,0 +1,19 @@
+{
+  "name": "council",
+  "owner": {
+    "name": "Michael Traw"
+  },
+  "metadata": {
+    "description": "Adversarial AI Council: structured Claude vs Codex debate about solution quality.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "council",
+      "description": "Structured adversarial review: Codex critiques, Claude rebuts, a neutral runner keeps the ledger.",
+      "version": "0.1.0",
+      "author": { "name": "Michael Traw" },
+      "source": "./plugins/council"
+    }
+  ]
+}

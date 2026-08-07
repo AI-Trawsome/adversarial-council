@@ -1,0 +1,8 @@
+{
+  "name": "council",
+  "version": "0.1.0",
+  "description": "Adversarial AI Council: structured Claude vs Codex review debates with a runner-owned ledger.",
+  "author": {
+    "name": "Michael Traw"
+  }
+}
