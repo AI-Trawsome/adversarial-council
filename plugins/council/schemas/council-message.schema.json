@@ -3,31 +3,31 @@
   "title": "CouncilMessage",
   "type": "object",
   "additionalProperties": false,
-  "required": ["round", "side", "findings", "responses"],
+  "required": ["round", "side", "findings", "responses", "notes"],
   "properties": {
-    "round": { "type": "integer", "minimum": 1 },
+    "round": { "type": "integer" },
     "side": { "type": "string", "enum": ["codex", "claude"] },
     "findings": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "claimant", "claim", "evidence", "support_level", "severity", "confidence", "status"],
+        "required": ["id", "claimant", "claim", "evidence", "support_level", "severity", "confidence", "status", "deciding_evidence"],
         "properties": {
-          "id": { "type": "string", "minLength": 1 },
+          "id": { "type": "string" },
           "claimant": { "type": "string", "enum": ["codex", "claude"] },
-          "claim": { "type": "string", "minLength": 1 },
+          "claim": { "type": "string" },
           "evidence": {
             "type": "string",
-            "description": "Checkable citation: file:line-range, command output, doc section. Empty or uncheckable evidence causes the runner to force support_level to 'unsupported'."
+            "description": "Checkable citation: file:line-range, path, command output, or `quoted excerpt`. Empty or uncheckable evidence causes the runner to force support_level to 'unsupported'."
           },
           "support_level": { "type": "string", "enum": ["unsupported", "weak", "moderate", "strong"] },
           "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
-          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
-          "status": { "type": "string", "enum": ["open", "accepted", "partially-accepted", "rejected", "withdrawn"] },
+          "confidence": { "type": "number", "description": "0 to 1; the runner rejects values outside that range." },
+          "status": { "type": "string", "enum": ["open", "accepted", "partially-accepted", "rejected", "withdrawn"], "description": "New findings must be 'open'." },
           "deciding_evidence": {
-            "type": "string",
-            "description": "What concrete evidence would settle this finding. Required at close for any finding still rejected/disputed."
+            "type": ["string", "null"],
+            "description": "What concrete evidence would settle this finding if disputed. Use null when not applicable."
           }
         }
       }
@@ -37,35 +37,34 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["finding_id", "verdict", "reason"],
+        "required": ["finding_id", "verdict", "reason", "evidence", "contest_support_level", "proposed_fix", "deciding_evidence"],
         "properties": {
-          "finding_id": { "type": "string", "minLength": 1 },
+          "finding_id": { "type": "string" },
           "verdict": { "type": "string", "enum": ["accept", "partial", "reject"] },
           "reason": {
             "type": "string",
-            "minLength": 1,
             "description": "accept: what evidence changed your mind. partial: which components are accepted vs rejected, and why. reject: why the claim fails."
           },
           "evidence": {
-            "type": "string",
-            "description": "Checkable counter-evidence. REQUIRED by the runner when verdict is 'reject'."
+            "type": ["string", "null"],
+            "description": "Checkable counter-evidence. The runner REQUIRES this (non-null) when rejecting an opponent's finding. Null otherwise if none."
           },
           "contest_support_level": {
-            "type": "string",
-            "enum": ["unsupported", "weak", "moderate", "strong"],
-            "description": "Optional: contest the opponent's self-assigned support_level for this finding."
+            "type": ["string", "null"],
+            "enum": ["unsupported", "weak", "moderate", "strong", null],
+            "description": "Contest the opponent's self-assigned support_level, or null."
           },
           "proposed_fix": {
-            "type": "string",
-            "description": "Optional concrete fix proposal for accepted findings. Proposal only; Review mode never applies changes."
+            "type": ["string", "null"],
+            "description": "Concrete fix proposal for accepted findings (proposal only; Review mode never applies changes), or null."
           },
           "deciding_evidence": {
-            "type": "string",
-            "description": "When maintaining a dispute (verdict 'reject'/'partial' on your own contested finding, or rejecting the opponent's), name the concrete evidence that would settle it."
+            "type": ["string", "null"],
+            "description": "When maintaining a dispute: the concrete evidence that would settle it. Null otherwise."
           }
         }
       }
     },
-    "notes": { "type": "string" }
+    "notes": { "type": ["string", "null"], "description": "Optional free-text note, or null." }
   }
 }
