@@ -1,0 +1,3 @@
+# Council plugin runtime output (debate ledgers, consult exchange logs).
+# Records that must persist are copied into reviews/ and committed there.
+.council/
