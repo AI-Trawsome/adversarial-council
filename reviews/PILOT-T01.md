@@ -1,5 +1,7 @@
 # PILOT-T01 — Run record, isolation design, and scoring asterisk
 
+> **Superseded for results.** T01 was re-run on 2026-08-08 under the final scoring configuration; see `reviews/RERUN-T01.md`. The results in §6.3 below are descriptive evidence about the machinery, not data about the benchmark question — per R-001, which requires both arms re-run rather than pairing a clean Arm A against this slice-only, token-incomplete Arm B. **The isolation design in §2 remains current and governs every task.**
+
 **Task:** T01 · aiohttp · buggy SHA `4ef04d66fa45` · ground-truth fix SHA `4eb358863b37`
 **Status:** pilot run. Arm B scoring; **Arm A NON-SCORING** (see §4).
 **Date:** 2026-08-07
