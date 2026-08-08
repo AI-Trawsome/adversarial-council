@@ -10,6 +10,9 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { applyTurnNotification, createTurnCaptureState, normalizeTokenUsage } from "../lib/codex.mjs";
+import { accumulateTokens, accumulateUsage, usageStatusFor } from "../council-runner.mjs";
+
 const RUNNER = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "council-runner.mjs");
 let passed = 0;
 let failed = 0;
@@ -245,6 +248,73 @@ console.log("12. defender cannot rewrite a settled finding");
     R("R1-F1", "reject", "Changed my mind actually.", { evidence: EV })
   ] })], { expectFail: true });
   assert(rewrite.failed && /settled/.test(rewrite.stderr), "defender flip on accepted finding is illegal");
+}
+
+console.log("13. cost capture: provider token usage (BENCHMARK-AMENDMENTS A-001)");
+{
+  // Captured verbatim from a real codex-cli 0.147.0 app-server session on
+  // 2026-08-08. Not hand-written: the T01 pilot recorded usage: null because
+  // the runner read `turn.usage`, a field this protocol never sends, so the
+  // shape below is the only thing that proves the right source is now read.
+  const REAL_USAGE_NOTIFICATION = {
+    method: "thread/tokenUsage/updated",
+    params: {
+      threadId: "thread-main",
+      turnId: "turn-1",
+      tokenUsage: {
+        total: { totalTokens: 20305, inputTokens: 19994, cachedInputTokens: 0, cacheWriteInputTokens: 0, outputTokens: 311, reasoningOutputTokens: 126 },
+        last: { totalTokens: 20305, inputTokens: 19994, cachedInputTokens: 0, cacheWriteInputTokens: 0, outputTokens: 311, reasoningOutputTokens: 126 },
+        modelContextWindow: 258400
+      }
+    }
+  };
+
+  const state = createTurnCaptureState("thread-main");
+  applyTurnNotification(state, REAL_USAGE_NOTIFICATION);
+  assert(state.tokenUsage !== null, "usage notification is captured");
+  assert(state.tokenUsage?.last?.totalTokens === 20305, "raw provider payload kept verbatim", JSON.stringify(state.tokenUsage?.last));
+
+  const norm = normalizeTokenUsage(state.tokenUsage);
+  assert(norm?.totalTokens === 20305 && norm?.outputTokens === 311 && norm?.reasoningOutputTokens === 126,
+    "normalization projects the turn's own usage (.last)", JSON.stringify(norm));
+
+  // The regression itself: a turn/completed payload carries no usage. If a
+  // future change reads usage from the turn again, this stays null and the
+  // capture assertion above is what fails.
+  const turnOnly = createTurnCaptureState("thread-main");
+  applyTurnNotification(turnOnly, { method: "turn/completed", params: { threadId: "thread-main", turn: { id: "turn-1", status: "completed" } } });
+  assert(turnOnly.tokenUsage === null, "turn/completed carries no usage — the pilot's null had a real cause");
+
+  // Subagent threads report their own usage and must not be billed to the turn.
+  const crossThread = createTurnCaptureState("thread-main");
+  applyTurnNotification(crossThread, { ...REAL_USAGE_NOTIFICATION, params: { ...REAL_USAGE_NOTIFICATION.params, threadId: "thread-subagent" } });
+  assert(crossThread.tokenUsage === null, "usage from another thread is not attributed to this turn");
+
+  // No provider numbers means no numbers — never zeros.
+  assert(normalizeTokenUsage(null) === null, "absent usage normalizes to null, not to zeros");
+  assert(normalizeTokenUsage({ total: { totalTokens: 5 } }) === null, "cumulative-only payload yields no per-turn projection");
+
+  // A retry is a second billed turn: both raw payloads survive, counts add up.
+  const twoCalls = accumulateUsage(accumulateUsage(null, { last: { totalTokens: 100 } }), { last: { totalTokens: 40 } });
+  assert(Array.isArray(twoCalls) && twoCalls.length === 2, "each call's raw payload is preserved in order");
+  const summed = accumulateTokens({ totalTokens: 100, outputTokens: 10 }, { totalTokens: 40, outputTokens: 4 });
+  assert(summed.totalTokens === 140 && summed.outputTokens === 14, "retry cost is summed, not overwritten", JSON.stringify(summed));
+  const partial = accumulateTokens({ totalTokens: 100 }, { totalTokens: null, outputTokens: 7 });
+  assert(partial.totalTokens === 100 && partial.outputTokens === 7, "a missing field is not counted as zero", JSON.stringify(partial));
+
+  // "missing" and "not applicable" are different facts about a gating metric.
+  assert(usageStatusFor({ mocked: false, usage: null }) === "missing", "unmocked turn with no usage is recorded as missing");
+  assert(usageStatusFor({ mocked: false, usage: [{}] }) === "captured", "unmocked turn with usage is recorded as captured");
+  assert(usageStatusFor({ mocked: true, usage: null }) === "not-applicable", "mocked turn is not-applicable, not missing");
+
+  // End to end through the runner: Arm A's mocked critique must not look like
+  // a provider that failed to report.
+  const cwd = makeRepo();
+  const dbt = run(cwd, ["init"]).out.debateId;
+  run(cwd, ["critique", "--debate", dbt], { mock: { round: 1, side: "codex", findings: [F("R1-F1")], responses: [] } });
+  const stats = JSON.parse(fs.readFileSync(path.join(cwd, ".council", dbt, "debate.json"), "utf8")).stats.rounds[0];
+  assert(stats.usageStatus === "not-applicable", "mocked round records usageStatus not-applicable", stats.usageStatus);
+  assert(stats.usage === null && stats.tokens === null, "mocked round invents no token counts");
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

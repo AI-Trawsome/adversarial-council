@@ -20,8 +20,8 @@ Both amendments were submitted for external ruling before adoption and approved.
 
 | id | subject | status | authorized by |
 |---|---|---|---|
-| A-001 | Codex token-capture repair | approved, not yet implemented | consult 001 §1 |
-| A-002 | Scrubbed full checkouts for all 25 tasks | approved, not yet implemented | consult 001 §2 |
+| A-001 | Codex token-capture repair | approved, implemented 2026-08-07 | consult 001 §1 |
+| A-002 | Scrubbed full checkouts for all 25 tasks | approved, implemented 2026-08-07 | consult 001 §2 |
 | R-001 | Subagent isolation sufficiency; T01 dataset treatment | approved, ruling only — amends no rule | consult 001 §3 |
 
 Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07.
@@ -45,7 +45,15 @@ Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 20
 
 Condition 4 deserves its own sentence: a cost criterion that quietly accepts estimates is a cost criterion that cannot fail. If usage is unavailable for a task, the honest report is a gap, not a guess.
 
-**Implementation record:** *(pending — to be completed with commit SHA, cause, and test evidence when the fix lands)*
+**Implementation record:** implemented 2026-08-07. Full detail in `reviews/IMPL-A001-A002.md`.
+
+*Cause:* the runner read `result.turn?.usage`, a field the Codex app-server protocol never sends. Not a flaky capture — it could only ever have been null. Usage arrives on its own `thread/tokenUsage/updated` notification, keyed by thread; `turn/completed` carries none.
+
+*Change:* capture the notification's payload verbatim (thread-matched, so subagent turns are not billed to the main turn); project `.last` for per-turn cost; record `usageStatus` of `captured` / `missing` / `not-applicable` so a null can no longer mean two different things; sum across calls, since a malformed-output retry is a second billed turn.
+
+*Validation:* 15 new assertions in `scripts/test/protocol-tests.mjs` §13, driven by a payload captured from a live session rather than hand-written, including a direct assertion that a `turn/completed` payload yields no usage — so reverting to `turn.usage` fails the suite. Protocol suite: 46 passed, 0 failed. Verified live end to end: `usageStatus: "captured"`, 20,226 tokens on a real Codex turn.
+
+Conditions 1–4 are met. S3 is computable on the token axis.
 
 ---
 
@@ -72,7 +80,17 @@ Alternates, grafts, replace refs, and submodule metadata are each an independent
 
 **Consequence for the pilot.** Supplying a full checkout changes the runner's collected context, so T01's slice-only pilot runs are not comparable with scoring runs and are superseded (see R-001).
 
-**Implementation record:** *(pending — constructor, auditor, and manifest format to be recorded here when built)*
+**Implementation record:** implemented 2026-08-07 as `bench/make-scrubbed-checkout.mjs` and `bench/audit-scrubbed-checkout.mjs`. Full detail in `reviews/IMPL-A001-A002.md`.
+
+*Constructor:* exports the tree blob-by-blob from `git ls-tree` + `git cat-file` rather than via `git archive`, because `git archive` honours `export-ignore` and would silently drop paths — producing a checkout that does not match the tree its manifest claims. Fresh `git init`, one commit, fixed harness identity and date, reflogs removed, `git add -A -f` so the tree's own `.gitignore` cannot skip tracked paths. Every scrub requirement in this entry is enforced.
+
+*Manifest:* source repo, buggy SHA and tree SHA, import commit and tree, policy, counts, every exclusion with its reason, and per file `{path, mode, oid, bytes, sha256}`. The blob `oid` taken from the source tree is what makes the export provable rather than plausible.
+
+*Audit:* 20 checks, re-deriving rather than trusting — content hashes and blob ids recomputed, file set compared both ways. `--forbidden-sha` asserts the fix commit does not resolve inside the scrubbed repository, and the audit reports that the decisive check did not run rather than passing quietly if it is omitted. Output is a verdict and counts only, safe for a contamination-sensitive orchestrator.
+
+*Validation:* T01 built and audited — 446 files, 4 exclusions, `verdict: PASS`, 0 of 20 checks failed. Negative test against the unscrubbed clone fails 8 checks including fix-commit reachability, confirming the audit detects the condition it exists to prevent.
+
+**One open item raised by the implementation.** Agent-instruction files (`CLAUDE.md`, `AGENTS.md`, `.claude/`, `.codex/`, …) are excluded by default, because CLAUDE.md is read by Claude and AGENTS.md by Codex — leaving both in place gives each arm different repository-authored instructions in exactly the variable the benchmark holds constant. T01's tree ships both. This exclusion is an *extension* of the ruling above, not an application of it: the approved spec authorizes excluding benchmark records, fix metadata, and construction artifacts, and these are none of those. It needs a decision before the scoring run since it applies to all 25 tasks. `--keep-agent-instructions` reverses it; every manifest records which way it went.
 
 ---
 

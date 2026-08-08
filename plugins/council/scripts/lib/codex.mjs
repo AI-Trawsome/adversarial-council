@@ -299,8 +299,14 @@ function describeCompletedItem(state, item) {
   }
 }
 
-/** @returns {TurnCaptureState} */
-function createTurnCaptureState(threadId, options = {}) {
+/**
+ * Exported as a test seam: the protocol suite drives real captured
+ * notification payloads through applyTurnNotification() and asserts usage
+ * lands, without needing a live Codex call.
+ *
+ * @returns {TurnCaptureState}
+ */
+export function createTurnCaptureState(threadId, options = {}) {
   let resolveCompletion;
   let rejectCompletion;
   const completion = new Promise((resolve, reject) => {
@@ -320,6 +326,7 @@ function createTurnCaptureState(threadId, options = {}) {
     resolveCompletion,
     rejectCompletion,
     finalTurn: null,
+    tokenUsage: null,
     completed: false,
     finalAnswerSeen: false,
     pendingCollaborations: new Set(),
@@ -487,7 +494,32 @@ function recordItem(state, item, lifecycle, threadId = null) {
   }
 }
 
-function applyTurnNotification(state, message) {
+/**
+ * Provider-reported token usage, normalized for cost reporting.
+ *
+ * This is a projection of the provider's own numbers, never a reconstruction:
+ * every field is copied straight from `tokenUsage.last` (the turn's own usage,
+ * as opposed to `.total`, which is cumulative for the thread). If the provider
+ * reported nothing, this returns null so the caller can record the measurement
+ * as missing. BENCHMARK-AMENDMENTS A-001 condition 4 forbids substituting an
+ * estimate for provider-reported usage, so there is deliberately no fallback
+ * path that computes or guesses a token count.
+ */
+export function normalizeTokenUsage(tokenUsage) {
+  const last = tokenUsage?.last;
+  if (!last || typeof last !== "object") return null;
+  const pick = (value) => (typeof value === "number" ? value : null);
+  return {
+    totalTokens: pick(last.totalTokens),
+    inputTokens: pick(last.inputTokens),
+    cachedInputTokens: pick(last.cachedInputTokens),
+    cacheWriteInputTokens: pick(last.cacheWriteInputTokens),
+    outputTokens: pick(last.outputTokens),
+    reasoningOutputTokens: pick(last.reasoningOutputTokens)
+  };
+}
+
+export function applyTurnNotification(state, message) {
   switch (message.method) {
     case "thread/started":
       registerThread(state, message.params.thread.id, {
@@ -550,6 +582,16 @@ function applyTurnNotification(state, message) {
         "finalizing"
       );
       completeTurn(state, message.params.turn);
+      break;
+    case "thread/tokenUsage/updated":
+      // Provider-reported token usage. `turn/completed` carries no usage field —
+      // reading it there is what produced `usage: null` for every Codex turn of
+      // the T01 pilot (BENCHMARK-AMENDMENTS A-001). Usage arrives only here, as
+      // its own notification, and only for the thread it names: subagent threads
+      // report their own and must not overwrite the main turn's.
+      if ((message.params.threadId ?? null) === state.threadId) {
+        state.tokenUsage = message.params.tokenUsage ?? null;
+      }
       break;
     default:
       break;
@@ -1049,6 +1091,8 @@ export async function runAppServerReview(cwd, options = {}) {
       reviewText: turnState.reviewText,
       reasoningSummary: turnState.reasoningSummary,
       turn: turnState.finalTurn,
+      usage: turnState.tokenUsage,
+      tokens: normalizeTokenUsage(turnState.tokenUsage),
       error: turnState.error,
       stderr: cleanCodexStderr(client.stderr)
     };
@@ -1150,6 +1194,11 @@ export async function runAppServerTurn(cwd, options = {}) {
       finalMessage: turnState.lastAgentMessage,
       reasoningSummary: turnState.reasoningSummary,
       turn: turnState.finalTurn,
+      // Raw provider payload, verbatim, plus a normalized projection of it.
+      // Both are kept: A-001 requires the provider's own numbers to survive
+      // alongside whatever normalization cost reporting consumes.
+      usage: turnState.tokenUsage,
+      tokens: normalizeTokenUsage(turnState.tokenUsage),
       error: turnState.error,
       stderr: cleanCodexStderr(client.stderr),
       fileChanges: turnState.fileChanges,

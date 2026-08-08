@@ -325,6 +325,49 @@ function runTripwire(ledger, msg, round) {
   return null;
 }
 
+// ---------- cost capture ----------
+
+/**
+ * Raw provider usage payloads, kept verbatim and in call order.
+ *
+ * Stored as a list rather than merged into one object because a round can bill
+ * more than one turn (the malformed-output retry), and BENCHMARK-AMENDMENTS
+ * A-001 condition 4 requires the provider's own reported numbers to survive
+ * intact next to any normalization. Nothing here is derived.
+ */
+function accumulateUsage(previous, raw) {
+  return [...(previous ?? []), raw];
+}
+
+/**
+ * Field-wise sum of the normalized per-turn projections.
+ *
+ * A missing field stays missing: absent numbers are never treated as zero,
+ * because a zero would report a measurement that was not taken. Only numbers
+ * the provider actually sent are added.
+ */
+function accumulateTokens(previous, next) {
+  if (!next) return previous;
+  if (!previous) return { ...next };
+  const merged = { ...previous };
+  for (const [key, value] of Object.entries(next)) {
+    if (typeof value !== "number") continue;
+    merged[key] = typeof merged[key] === "number" ? merged[key] + value : value;
+  }
+  return merged;
+}
+
+/**
+ * Why the cost measurement is or is not present, stated rather than implied.
+ * A bare null cannot distinguish "the provider reported nothing" (a gap in a
+ * gating metric) from "no provider was called" (Arm A, whose critic cost is
+ * measured outside the runner). The T01 pilot could not tell those apart.
+ */
+function usageStatusFor({ mocked, usage }) {
+  if (mocked) return "not-applicable";
+  return usage ? "captured" : "missing";
+}
+
 // ---------- steps ----------
 
 function stepInit(args, cwd) {
@@ -390,6 +433,7 @@ async function stepCritique(args, cwd) {
 
   let message;
   let usage = null;
+  let tokens = null;
   let codexCalls = 0;
   if (process.env.COUNCIL_MOCK_CRITIQUE) {
     message = readJson(process.env.COUNCIL_MOCK_CRITIQUE);
@@ -405,7 +449,13 @@ async function stepCritique(args, cwd) {
         outputSchema: readOutputSchema(SCHEMA_PATH)
       });
       debate.codexThreadId = result.threadId;
-      usage = result.turn?.usage ?? usage; // best-effort token capture (finding #7)
+      // Usage arrives on its own notification, not on the turn object. Summed
+      // across calls because a malformed-output retry is a second billed turn:
+      // the cost of this round is both calls, not the last one.
+      if (result.usage) {
+        usage = accumulateUsage(usage, result.usage);
+        tokens = accumulateTokens(tokens, result.tokens);
+      }
       return parseStructuredOutput(result.finalMessage, {
         status: result.status,
         failureMessage: result.error?.message ?? result.stderr
@@ -433,7 +483,17 @@ async function stepCritique(args, cwd) {
   debate.phase = REBUT_PHASE;
   debate.lastCritique = message;
   debate.lastCritiqueChanges = added + responseChanges;
-  debate.stats.rounds.push({ round, side: "codex", durationMs: Date.now() - startedAt, codexCalls, usage, mocked: Boolean(process.env.COUNCIL_MOCK_CRITIQUE) });
+  const mocked = Boolean(process.env.COUNCIL_MOCK_CRITIQUE);
+  debate.stats.rounds.push({
+    round,
+    side: "codex",
+    durationMs: Date.now() - startedAt,
+    codexCalls,
+    mocked,
+    usageStatus: usageStatusFor({ mocked, usage }),
+    usage,
+    tokens
+  });
   saveDebate(dir, debate, ledger);
   out({ round, newFindings: added, responseChanges, critique: message, next: `write rebuttal JSON per prompts/rebuttal-guidance.md, then: node council-runner.mjs rebut --debate ${debate.debateId} --file <rebuttal.json>` });
 }
@@ -566,4 +626,13 @@ async function main() {
   }
 }
 
-main().catch((error) => fail(error?.stack ?? String(error)));
+// Run only when invoked as a CLI, so the protocol suite can import the cost
+// helpers above and assert on them directly. S3 is a gating criterion; the
+// functions that compute it should be reachable by a test without spawning a
+// process and without a live provider call.
+const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (invokedDirectly) {
+  main().catch((error) => fail(error?.stack ?? String(error)));
+}
+
+export { accumulateUsage, accumulateTokens, usageStatusFor };
