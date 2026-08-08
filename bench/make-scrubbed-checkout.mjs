@@ -30,34 +30,13 @@ import path from "node:path";
 import process from "node:process";
 import { execFileSync } from "node:child_process";
 
+import { RULES, classifyPath, policyDescriptor } from "./exclusion-policy.mjs";
+
 // Deterministic identity and timestamps: same source tree in, same commit SHA
 // out. Also keeps the operator's own name out of the reviewers' context.
 const HARNESS_IDENTITY = { name: "Benchmark Harness", email: "harness@localhost" };
 const FIXED_DATE = "2000-01-01T00:00:00Z";
 const IMPORT_COMMIT_MESSAGE = "Initial import";
-
-/**
- * Agent-instruction files are excluded by default, and this is the one
- * exclusion that is a judgment call rather than a mechanical rule.
- *
- * CLAUDE.md is read by Claude; AGENTS.md is read by Codex. Leaving both in the
- * checkout hands each arm a different set of repository-authored instructions —
- * an asymmetry in exactly the variable the benchmark holds constant. Several
- * of the task repositories ship one or both. Excluding them costs a little
- * fidelity to the original checkout; keeping them costs the comparison.
- *
- * Recorded in the manifest either way. `--keep-agent-instructions` restores them.
- */
-const AGENT_INSTRUCTION_PATHS = [
-  "CLAUDE.md",
-  "CLAUDE.local.md",
-  "AGENTS.md",
-  "AGENT.md",
-  ".cursorrules",
-  ".windsurfrules",
-  ".github/copilot-instructions.md"
-];
-const AGENT_INSTRUCTION_DIRS = [".claude/", ".codex/", ".cursor/", ".windsurf/", ".aider/"];
 
 function arg(name, { required = true, fallback = null } = {}) {
   const i = process.argv.indexOf(`--${name}`);
@@ -80,11 +59,6 @@ function git(cwd, args, { buffer = false } = {}) {
     maxBuffer: 512 * 1024 * 1024,
     shell: false
   });
-}
-
-function isAgentInstruction(filePath) {
-  if (AGENT_INSTRUCTION_PATHS.includes(filePath)) return true;
-  return AGENT_INSTRUCTION_DIRS.some((dir) => filePath.startsWith(dir));
 }
 
 /** Parse `git ls-tree -r -z --full-tree` into {mode, type, oid, path} records. */
@@ -128,11 +102,36 @@ function main() {
   for (const entry of entries) {
     if (entry.type === "commit" || entry.mode === "160000") {
       // A gitlink would pull in submodule metadata, which the scrub spec bars.
-      exclusions.push({ path: entry.path, reason: "submodule gitlink — submodule metadata excluded by scrub spec" });
+      // No blob exists for it: the oid is a commit in another repository.
+      exclusions.push({
+        path: entry.path,
+        mode: entry.mode,
+        oid: entry.oid,
+        oidType: "commit",
+        bytes: null,
+        sha256: null,
+        rule: RULES.SUBMODULE,
+        reason: "submodule gitlink — submodule metadata excluded by scrub spec"
+      });
       continue;
     }
-    if (!keepAgentInstructions && isAgentInstruction(entry.path)) {
-      exclusions.push({ path: entry.path, reason: "agent-instruction file — excluded to keep both arms' inputs symmetric" });
+
+    const verdict = keepAgentInstructions ? { excluded: false } : classifyPath(entry.path);
+    if (verdict.excluded) {
+      // Excluded paths carry full blob identity, not just a name and a reason.
+      // A third party has to be able to prove what was removed — a bare path
+      // says a file called CLAUDE.md went, not which bytes went.
+      const content = git(repo, ["cat-file", "blob", entry.oid], { buffer: true });
+      exclusions.push({
+        path: entry.path,
+        mode: entry.mode,
+        oid: entry.oid,
+        oidType: "blob",
+        bytes: content.length,
+        sha256: crypto.createHash("sha256").update(content).digest("hex"),
+        rule: verdict.rule,
+        reason: verdict.reason
+      });
       continue;
     }
 
@@ -198,8 +197,7 @@ function main() {
     },
     policy: {
       agentInstructionsExcluded: !keepAgentInstructions,
-      agentInstructionPaths: AGENT_INSTRUCTION_PATHS,
-      agentInstructionDirs: AGENT_INSTRUCTION_DIRS
+      ...policyDescriptor()
     },
     counts: {
       treeEntries: entries.length,

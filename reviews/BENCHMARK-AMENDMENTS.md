@@ -22,9 +22,12 @@ Both amendments were submitted for external ruling before adoption and approved.
 |---|---|---|---|
 | A-001 | Codex token-capture repair | approved, implemented 2026-08-07 | consult 001 §1 |
 | A-002 | Scrubbed full checkouts for all 25 tasks | approved, implemented 2026-08-07 | consult 001 §2 |
+| A-002-E1 | Agent-instruction files excluded from scrubbed checkouts | countersigned, implemented 2026-08-08 | consult 002 |
 | R-001 | Subagent isolation sufficiency; T01 dataset treatment | approved, ruling only — amends no rule | consult 001 §3 |
 
-Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07.
+Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07. ☑ A-002-E1 — approved 2026-08-08.
+
+**Second authorization** (A-002-E1 only): consult exchange 002, 2026-08-08T14:51Z. Committed verbatim at `reviews/CHATGPT-RULING-014-a002-extension.md`, `sha256 3b7b6c28702e7e8bac7f798b251ba3f20fbcdd3e9195e43eddbdf56966c2153c`.
 
 ---
 
@@ -90,7 +93,41 @@ Alternates, grafts, replace refs, and submodule metadata are each an independent
 
 *Validation:* T01 built and audited — 446 files, 4 exclusions, `verdict: PASS`, 0 of 20 checks failed. Negative test against the unscrubbed clone fails 8 checks including fix-commit reachability, confirming the audit detects the condition it exists to prevent.
 
-**One open item raised by the implementation.** Agent-instruction files (`CLAUDE.md`, `AGENTS.md`, `.claude/`, `.codex/`, …) are excluded by default, because CLAUDE.md is read by Claude and AGENTS.md by Codex — leaving both in place gives each arm different repository-authored instructions in exactly the variable the benchmark holds constant. T01's tree ships both. This exclusion is an *extension* of the ruling above, not an application of it: the approved spec authorizes excluding benchmark records, fix metadata, and construction artifacts, and these are none of those. It needs a decision before the scoring run since it applies to all 25 tasks. `--keep-agent-instructions` reverses it; every manifest records which way it went.
+**The agent-instruction exclusion raised by this implementation was carried separately and countersigned — see A-002-E1 below.**
+
+---
+
+## A-002-E1 — Agent-instruction files are excluded from scrubbed checkouts
+
+**Standing:** an extension to A-002, not an application of it. A-002 authorizes excluding benchmark records, fix metadata, and construction artifacts; agent-instruction files are none of those. It was therefore put back for a separate countersign (consult 002, 2026-08-08) rather than folded in silently. Approved.
+
+**Rule affected:** A-002's requirement that both arms receive byte-identical task inputs.
+
+**The problem.** Byte-identical inputs do not preserve a controlled comparison when the two critic implementations automatically consume *different subsets* of those inputs. `CLAUDE.md` and `.claude/` are read by Claude; `AGENTS.md` and `.codex/` are read by Codex. A repository shipping both hands each arm a set of repository-authored instructions the other never sees — a treatment difference beyond critic identity, capable of shifting search priorities, tool use, and reporting thresholds, and in principle capable of carrying task-specific hints. This is not hypothetical: T01's tree ships `CLAUDE.md`, `AGENTS.md`, *and* a `.claude/skills/` entry.
+
+**Resolution.** One deterministic, model-neutral, content-blind exclusion policy, applied to all 25 tasks, both arms, and every participant of either role — defenders included. Allowing the defender's repository-specific instructions while suppressing the critics' would simply relocate the hidden prompt channel.
+
+**Binding conditions, and how each is met:**
+
+1. *One deterministic policy across all tasks and both arms, including nested instruction files where discovery is recursive.* — `bench/exclusion-policy.mjs` matches instruction basenames at **any depth**, not just the repository root. A nested `CLAUDE.md` governs its subtree, so a root-only rule would leave the channel open everywhere except where it is easiest to notice.
+2. *Exact names and path rules declared in the constructor policy; no task-by-task judgment from file contents.* — the policy is path-shaped and content-blind; nothing inspects what a file says.
+3. *Every excluded path, source blob identity, hash, and reason recorded in the manifest.* — exclusions carry `{path, mode, oid, oidType, bytes, sha256, rule, reason}`. A bare path would say that *a file called CLAUDE.md* went, not *which bytes* went.
+4. *The auditor verifies both that all policy-matched paths were removed and that no non-matching path was.* — six new checks, described below.
+5. *No broad directory exclusion of ordinary project source unless declared and reported as a limitation.* — **declared.** See the limitation statement below; it is embedded in every manifest as `policy.limitation`, and the auditor fails if it is absent.
+6. *Same policy for defenders as for critics.* — exclusion is physical, so no participant of either role can read the files.
+7. *Absolute results reported as conditional on a scrubbed checkout with repository-authored agent instructions removed.* — recorded here and in `reviews/IMPL-A001-A002.md`; it must appear in the benchmark report alongside the A-002 conditionality already required.
+
+**Declared limitation (condition 5).** Directory-level exclusion of `.claude/`, `.codex/`, `.cursor/`, `.windsurf/`, `.aider/`, `.github/copilot/` removes *everything* beneath those paths, including any file that is ordinary project source rather than agent instructions or configuration. Reliable file-level classification is not available: those trees mix skills, prompts, settings, hooks, and arbitrary helpers with no marker separating what an agent reads from what it does not, and the set varies by tool and by version. The ruling permits the broad rule on condition it is declared — it is, here, in every manifest, and it must appear in the results.
+
+**The alternative we did not take.** The ruling notes that if repository-instruction discovery could be conclusively disabled for every participant, retaining the files as inert reviewable source would preserve more of the original tree. We judged that unavailable: whether a subagent's `CLAUDE.md` discovery is truly off is a property of the agent harness, not something the orchestrator can demonstrate from inside a run — the same limit already recorded in R-001's attestation caveat. Physical exclusion is the auditable choice, and auditability is the point.
+
+**Implementation record:** implemented 2026-08-08. Policy in `bench/exclusion-policy.mjs` (version 2), shared by constructor and auditor — deliberately one module, since an auditor carrying its own copy of the rules would only ever confirm that two copies agreed.
+
+*Audit, both directions:* no policy-matched path survives in the checkout; every recorded exclusion is one the policy independently produces, with the same rule; excluded paths carry blob identity and hash; every source-tree path is either exported or recorded as excluded; every policy-matched source path was excluded; manifest policy version matches the auditor.
+
+*Validation:* T01 rebuilt under policy v2 — 446 files, 4 exclusions, `verdict: PASS`, 0 of **26** checks failed, same deterministic import commit `c79d98ca…` as before. Three negative tests, each isolating a new check: an instruction file surviving in the checkout fails "no policy-matched path survives"; a manifest claiming an exclusion the policy does not produce fails "every exclusion is one the policy independently produces" (1 failure, nothing else); an exclusion recorded without blob identity fails "excluded paths record blob identity and hash" (1 failure, nothing else).
+
+Checking only one direction would have been worse than useless: verifying removals alone passes a scrub that deleted half the repository, and verifying justifications alone passes a scrub that missed an instruction file outright. Neither failure is visible from the other side.
 
 ---
 

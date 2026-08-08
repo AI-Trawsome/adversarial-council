@@ -27,6 +27,8 @@ import path from "node:path";
 import process from "node:process";
 import { execFileSync } from "node:child_process";
 
+import { POLICY_VERSION, RULES, classifyPath } from "./exclusion-policy.mjs";
+
 const checks = [];
 const record = (name, ok, detail = "") => checks.push({ name, ok, detail });
 
@@ -156,7 +158,60 @@ if (sourceRepo) {
   record("manifest tree id cross-checked against source repo", true, "skipped: no --repo supplied");
 }
 
-// ---------- 4. the working tree is clean ----------
+// ---------- 4. the exclusion policy, verified in both directions ----------
+
+// The A-002 extension requires both halves. Checking only that matched paths
+// were removed would pass an over-broad scrub that deleted half the repository;
+// checking only that removals were justified would pass a scrub that missed an
+// instruction file entirely. Neither failure is visible from the other side.
+
+if (manifest.policy?.agentInstructionsExcluded) {
+  record("manifest policy version matches this auditor", manifest.policy.policyVersion === POLICY_VERSION,
+    `manifest ${manifest.policy.policyVersion} vs auditor ${POLICY_VERSION}`);
+
+  // (a) Nothing the policy matches survived in the checkout.
+  const survivors = onDisk.filter((filePath) => classifyPath(filePath).excluded);
+  record("no policy-matched path survives in the checkout", survivors.length === 0, survivors.slice(0, 5).join(", "));
+
+  // (b) Nothing outside the policy was removed. Every recorded exclusion must
+  // be one the policy independently produces, with the same rule.
+  const policyExclusions = manifest.exclusions.filter((item) => item.rule !== RULES.SUBMODULE);
+  const unjustified = policyExclusions.filter((item) => {
+    const verdict = classifyPath(item.path);
+    return !verdict.excluded || verdict.rule !== item.rule;
+  });
+  record("every exclusion is one the policy independently produces", unjustified.length === 0,
+    unjustified.slice(0, 5).map((item) => `${item.path} (recorded ${item.rule})`).join(", "));
+
+  // (c) Excluded paths carry blob identity, so a third party can prove what went.
+  const withoutIdentity = policyExclusions.filter((item) => !item.oid || !item.sha256 || typeof item.bytes !== "number");
+  record("excluded paths record blob identity and hash", withoutIdentity.length === 0,
+    withoutIdentity.slice(0, 5).map((item) => item.path).join(", "));
+
+  // (d) Against the source tree: exported ∪ excluded must be the whole tree,
+  // and every path the policy matches there must appear in the exclusions.
+  if (sourceRepo) {
+    const raw = execFileSync("git", ["ls-tree", "-r", "-z", "--full-tree", manifest.source.buggySha], {
+      cwd: path.resolve(sourceRepo), encoding: "utf8", maxBuffer: 512 * 1024 * 1024, shell: false
+    });
+    const sourcePaths = raw.split("\0").filter(Boolean).map((entry) => entry.split("\t")[1]);
+    const accountedFor = new Set([...inManifest, ...manifest.exclusions.map((item) => item.path)]);
+    const unaccounted = sourcePaths.filter((filePath) => !accountedFor.has(filePath));
+    record("every source-tree path is either exported or recorded as excluded", unaccounted.length === 0,
+      unaccounted.slice(0, 5).join(", "));
+
+    const recordedExclusions = new Set(manifest.exclusions.map((item) => item.path));
+    const missedByScrub = sourcePaths.filter((filePath) => classifyPath(filePath).excluded && !recordedExclusions.has(filePath));
+    record("every policy-matched source path was excluded", missedByScrub.length === 0,
+      missedByScrub.slice(0, 5).join(", "));
+  } else {
+    record("exclusion policy cross-checked against source tree", true, "skipped: no --repo supplied");
+  }
+} else {
+  record("exclusion policy verified", true, "skipped: manifest records agent instructions were retained");
+}
+
+// ---------- 5. the working tree is clean ----------
 
 const status = gitTry(out, ["status", "--porcelain", "--untracked-files=all"]).stdout.trim();
 record("scrubbed repo working tree is clean", status === "", status.split("\n").slice(0, 5).join("; "));
@@ -174,6 +229,8 @@ process.stdout.write(`${JSON.stringify({
   filesAudited: manifest.files.length,
   excluded: manifest.counts.excluded,
   agentInstructionsExcluded: manifest.policy?.agentInstructionsExcluded ?? null,
+  policyVersion: manifest.policy?.policyVersion ?? null,
+  declaredLimitation: manifest.policy?.limitation ? "present" : "ABSENT",
   failures: failures.map((check) => ({ check: check.name, detail: check.detail }))
 }, null, 2)}\n`);
 
