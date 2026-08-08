@@ -1,5 +1,7 @@
 # RERUN-T01 — T01 under the final scoring configuration
 
+> **Superseded by `reviews/RERUN-T01-v2.md`.** Staging v1 was rejected in consult 003 (non-unique slice placement, unreconciled line count, reviewer misframing). T01 was re-run under staging v2 on 2026-08-08.
+
 **Task:** T01 · aiohttp · buggy SHA `4ef04d66fa45` · ground-truth fix SHA `4eb358863b37`
 **Date:** 2026-08-08 · **Status:** both arms run and closed; **ungraded**
 **Supersedes:** the pilot runs in `reviews/PILOT-T01.md` §6, per R-001
@@ -138,4 +140,6 @@ _scrubbed/T01/, _scrubbed/T01-MANIFEST.json
 1. **Countersign the artifact-staging construction (§2).** It is the only part of the configuration not yet reviewed, and it applies to all 25 tasks.
 2. **Close the cost-provenance asymmetry (§5).** Claude-side tokens need to land in the ledger the same way Codex's now do, or S3 rests on two numbers that are not comparably auditable.
 3. **Decide how §3 metric 2 handles an unrunnable test suite (§6).** "Verified additional findings" requires a failing test or a demonstrable repro; reviewers cannot currently produce the former without out-of-band setup.
-4. **Grade both arms** — the primary metric, still outstanding, and the only thing that turns any of this into a result.
+4. **Grading is deferred until all 25 tasks have run both arms.** BENCHMARK.md §5 orders the procedure run-all-then-grade (step 3 runs all 25, step 4 grades), and interim scores would bias the remaining run — a grader who knows Arm B is ahead after five tasks is no longer independent of the six through twenty-five. So T01 is not graded now, and neither is any task until the run completes.
+
+   This interacts with §5a, whose per-task checklist carries "Verdict graded by a human per §3 before any implementation change is made". That item gates *implementation changes*, not the run itself; no implementation change is being made mid-run, so it is not triggered. Under the run-all-then-grade order it is satisfied for every task at once, at the end. It stays unticked in every per-task record until then, which is why it is unticked in §8 above.
