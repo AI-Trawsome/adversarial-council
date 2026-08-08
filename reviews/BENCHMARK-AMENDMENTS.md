@@ -24,7 +24,7 @@ Both amendments were submitted for external ruling before adoption and approved.
 | A-002 | Scrubbed full checkouts for all 25 tasks | approved, not yet implemented | consult 001 §2 |
 | R-001 | Subagent isolation sufficiency; T01 dataset treatment | approved, ruling only — amends no rule | consult 001 §3 |
 
-Michael Traw's approval: ☐ A-001 ☐ A-002 ☐ R-001
+Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07.
 
 ---
 
