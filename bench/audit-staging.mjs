@@ -71,7 +71,12 @@ const reconstructed = Buffer.from(selected.map((i) => lines[i]).join("\n") + (en
 record("range concatenation reconstructs the artifact byte for byte", sha256(reconstructed) === artifactSha);
 
 const removed = new Set(selected);
-const expectedBase = Buffer.from(lines.filter((_, i) => !removed.has(i)).join("\n") + (endsWithNewline ? "\n" : ""), "utf8");
+const keptBaseLines = lines.filter((_, i) => !removed.has(i));
+// Mirrors the constructor: an empty base is an empty file, never one blank line.
+const expectedBase = Buffer.from(
+  keptBaseLines.length === 0 ? "" : keptBaseLines.join("\n") + (endsWithNewline ? "\n" : ""),
+  "utf8"
+);
 const actualBase = execFileSync("git", ["show", `HEAD:${sealed.sourcePath}`], { cwd: staged, maxBuffer: 256 * 1024 * 1024, shell: false });
 record("base commit equals the source minus exactly those ranges", sha256(actualBase) === sha256(expectedBase));
 

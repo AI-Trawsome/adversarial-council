@@ -127,7 +127,12 @@ if (selected.length !== sidecar.artifactContentLines) die("declared artifact lin
 // slice something to be a diff against.
 const removed = new Set(selected);
 const baseLines = lines.filter((_, index) => !removed.has(index));
-fs.writeFileSync(targetFile, baseLines.join("\n") + (endsWithNewline ? "\n" : ""));
+// An empty base must be an empty file, not a file holding one empty line.
+// When the slice covers the whole source file, `[].join("\n") + "\n"` yields
+// "\n", which git reads as a single blank line — and it will pair that blank
+// against some blank line in the restored file, reporting one fewer addition
+// than the artifact has. That is what aborted T02 and T05.
+fs.writeFileSync(targetFile, baseLines.length === 0 ? "" : baseLines.join("\n") + (endsWithNewline ? "\n" : ""));
 
 const env = {
   ...process.env,
