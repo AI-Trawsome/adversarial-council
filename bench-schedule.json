@@ -2,7 +2,8 @@
   "purpose": "Pre-recorded arm-order schedule required by BENCHMARK.md §5 (procedure) and §5a (per-task checklist item: \"Arm order for this task follows the pre-recorded coin-flip schedule\").",
   "generatedAtUtc": "2026-08-07T22:09:35.147Z",
   "benchmarkSha256": "72d09391d09a91db1083420b293968c8c5c87d3ee3ead92ad0af00734557562f",
-  "pluginCommit": "70ccee139cd0da64c886c5af9c3d16f82a6e5226",
+  "pluginCommit": "f976990bd23a639caf680e112d969200946c1245",
+  "pluginCommitNote": "Supersedes the original pin 70ccee139cd0da64c886c5af9c3d16f82a6e5226. The plugin changed under amendments A-001 (Codex token capture), A-002 (scrubbed checkouts) and A-002-E1 (agent-instruction exclusion policy), so the old pin no longer identifies the code under test and would fail the BENCHMARK.md 5a gate 'Council plugin at the pinned commit'. f976990 is the commit at which plugins/ reached its current state, verifiable with `git log -1 -- plugins/`; later commits touch only bench/ and reviews/. The arm-order draw below is UNCHANGED: entropyHex, the per-task bytes, and the resulting first/second assignments are exactly as drawn on 2026-08-07T22:09:35.147Z, before any task ran. Only this pin moved.",
   "method": {
     "rng": "node:crypto.randomBytes (CSPRNG), one byte per task, drawn once",
     "mapping": "byte % 2 === 0 -> Arm A first; odd -> Arm B first",
