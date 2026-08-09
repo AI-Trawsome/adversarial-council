@@ -56,6 +56,19 @@ const dir = path.join(repoRoot, ".council", debateId);
 const debate = JSON.parse(fs.readFileSync(path.join(dir, "debate.json"), "utf8"));
 const ledger = JSON.parse(fs.readFileSync(path.join(dir, "ledger.json"), "utf8"));
 
+// Refuse to build a prompt unless the debate is actually awaiting a critique.
+// Without this guard the script happily computes round = debate.round + 1 while
+// a rebuttal is still owed, producing a critic message for a round that cannot
+// legally start — the runner rejects it, but only after a full critic turn has
+// been spent against a stale ledger.
+if (debate.phase !== "awaiting-critique") {
+  process.stderr.write(
+    `armA-prompt: refusing to build a prompt — debate is in phase "${debate.phase}", expected "awaiting-critique". ` +
+      `Submit the outstanding rebuttal first.\n`
+  );
+  process.exit(1);
+}
+
 // The runner computes `round` as debate.round + 1 at the top of stepCritique.
 const round = debate.round + 1;
 
