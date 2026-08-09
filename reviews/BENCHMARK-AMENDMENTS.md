@@ -25,8 +25,17 @@ Both amendments were submitted for external ruling before adoption and approved.
 | A-002-E1 | Agent-instruction files excluded from scrubbed checkouts | countersigned, implemented 2026-08-08 | consult 002 |
 | A-003 | S3 cost basis: provider-specific frozen API-equivalent dollars | approved, implemented 2026-08-09 | consult 005 §1–2 |
 | R-001 | Subagent isolation sufficiency; T01 dataset treatment | approved, ruling only — amends no rule | consult 001 §3 |
+| **Q-001** | **Shared reviewer scratch directory; T01–T06 treatment** | **open — awaiting ruling** | — |
+| **Q-002** | **T10/T11 share a source path; aggregate treatment** | **open — awaiting ruling** | — |
 
 Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07. ☑ A-002-E1 — approved 2026-08-08.
+
+**Q-001 and Q-002 are questions, not amendments.** Nothing has been changed under either, and neither blocks continuing the run. Both were found while running T07–T11 and are stated in full in `reviews/BATCH-T07-T11.md` §6, with the evidence needed to rule on them.
+
+- **Q-001** — every reviewer subagent in a session shares one scratch directory, and reproduction filenames written there name the defect mechanism. T07 Arm A was voided and re-run under per-seat isolation; T01–T06 ran under the uncorrected condition in both arms and cannot be re-run as part of that batch. The exposure can only favour whichever arm ran second, and arm order was coin-flipped per task, so it does not bias systematically toward A or B — but it is real per-task noise on the primary metric. This is the failure mode R-001 explicitly warned about: its qualification, not its approval, is what turned out to be load-bearing.
+- **Q-002** — T10 and T11 slice the same source file at two different commits, so they are not statistically independent tasks. Nothing leaks between them, and the frozen task list contains both; the question is only how the aggregate should treat them.
+
+Both bear on dataset composition, which is why they are indexed here rather than only in the batch record. Grading is deferred until all 25 tasks have run, so there is time to rule on both without stalling the run.
 
 **Second authorization** (A-002-E1 only): consult exchange 002, 2026-08-08T14:51Z. Committed verbatim at `reviews/CHATGPT-RULING-014-a002-extension.md`, `sha256 3b7b6c28702e7e8bac7f798b251ba3f20fbcdd3e9195e43eddbdf56966c2153c`.
 
