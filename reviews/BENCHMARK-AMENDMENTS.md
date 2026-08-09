@@ -23,6 +23,7 @@ Both amendments were submitted for external ruling before adoption and approved.
 | A-001 | Codex token-capture repair | approved, implemented 2026-08-07 | consult 001 §1 |
 | A-002 | Scrubbed full checkouts for all 25 tasks | approved, implemented 2026-08-07 | consult 001 §2 |
 | A-002-E1 | Agent-instruction files excluded from scrubbed checkouts | countersigned, implemented 2026-08-08 | consult 002 |
+| A-003 | S3 cost basis: provider-specific frozen API-equivalent dollars | approved, implemented 2026-08-09 | consult 005 §1–2 |
 | R-001 | Subagent isolation sufficiency; T01 dataset treatment | approved, ruling only — amends no rule | consult 001 §3 |
 
 Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07. ☑ A-002-E1 — approved 2026-08-08.
@@ -148,6 +149,28 @@ One honest limit on that second clause: the orchestrator can attest to what it p
 If the attestation conditions above cannot be demonstrated at re-run time, T01 remains unpaired: excluded from paired A-versus-B aggregates, with its Arm B result reported separately as descriptive pilot evidence only.
 
 ---
+
+## A-003 — S3 cost basis: provider-specific frozen API-equivalent dollars
+
+**Rule affected:** §4 criterion **S3** — *"Arm B's median per-task cost is ≤ 3× Arm A's."*
+
+**The ambiguity.** S3 never defines "cost". That was harmless while both arms were Claude and any token basis gave the same answer. It stopped being harmless once Arm B's critic became a different provider with different token accounting: the three plausible token bases differ by ~1.25× in the reported margin, and one of them (counting cache reads at par with fresh input) makes the metric track conversation length rather than work performed.
+
+**Rejected: a common weight vector.** Our first proposal applied Anthropic's published price ratios to both providers' tokens. Consult 005 rejected it, correctly: that yields *Anthropic-equivalent input units*, not cost for the other provider.
+
+**Adopted.** Modeled API-equivalent dollar cost, computed **separately per provider and model** from that provider's frozen public rate card, then summed across every billed critic and defender invocation in the arm. Per invocation: `fresh input × fresh rate + cache read × cache-read rate + cache write × cache-write rate + output × output rate`. **The gate is the median of per-task ratios, never a ratio of aggregates.**
+
+**Frozen inputs:** `bench/rate-card-frozen.json` (v1) — provider, model identity, identity source, rate source URL, retrieval date, currency, cache-write TTL categories, and rates. **Frozen before T07 and never retroactively updated** when public rates change; this card governs all 25 tasks.
+
+**Codex model identity — evidence, not convention.** Consult 005 required that if the CLI does not disclose an API-priceable model identity, no convenient model may be silently chosen. It does disclose one: `turn_context.model` in Codex's own rollout logs under `~/.codex/sessions/` records **`gpt-5.6-sol`**, independently in all six Arm B runs, unanimous, `cli_version 0.147.0`. That identity appears on OpenAI's public rate card ($5.00 fresh input / $0.50 cached input / $30.00 output per MTok), so the mapping is evidence-based end to end and no conservative-mapping rule was needed. OpenAI publishes no separate cache-write rate, so cache-write tokens are billed at the fresh-input rate — the conservative choice, since any real discount would only lower Arm B. Observed Codex cache writes were zero throughout, so the convention is currently moot.
+
+**Subscription billing, stated rather than exploited.** Codex ran under a ChatGPT subscription: its *observed* billed cost is subscription-flat and its marginal cash outlay is zero. Zero is **not** used in the gate. It describes this deployment's billing arrangement rather than the resource cost of the council, it does not generalize to an API user, and it is the convention that flatters Arm B. Three figures are reported and only one is gated: `observed billed cost` (unavailable / subscription-flat), **`modeled API-equivalent cost` (the S3 input)**, and `subscription marginal cost` ($0, reported, never gated). No fraction of the subscription fee is allocated per task — that would depend on unrelated monthly usage and be less reproducible than the model.
+
+**Disclosure condition (required by consult 005).** **T01–T06 cost data were already known when this ambiguity was resolved.** This is not blind pre-registration. It is defensible because every candidate basis agreed on every observed task and none came near the 3× ceiling — the choice moves the reported number, not the verdict. Having said that, the rule is now frozen and **no further basis change may be made after additional task costs are seen.**
+
+**Sensitivity views.** Bases A (non-cache-read tokens), B (total tokens including cache reads), the rejected common-weight C, and wall-clock are still reported for every task, labelled as token-accounting views rather than the gating monetary cost.
+
+**Implementation record:** implemented 2026-08-09. `bench/rate-card-frozen.json` + `bench/compute-s3-cost.mjs` (deterministic, reads only archived raw payloads). Independent recomputation by a separate agent, forbidden to read the script, reproduced every figure to the cent and additionally exposed erratum **E-002** — see `reviews/ERRATA.md`. Corrected T01–T06: median B/A **0.658×** against a 3.0× ceiling; Codex is 4.2%–8.4% of Arm B's modeled cost.
 
 ## Sequencing
 

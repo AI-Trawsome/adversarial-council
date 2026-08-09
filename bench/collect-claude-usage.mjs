@@ -101,13 +101,46 @@ function readUsage(file) {
   return messages;
 }
 
+/**
+ * Collapse the transcript's per-content-block records into one record per API
+ * call.
+ *
+ * The harness writes one assistant record per streamed content block, and every
+ * record in a call repeats that call's usage snapshot: the input side is
+ * byte-identical across the group, while `output_tokens` grows to its final
+ * value on the last record. Summing over records therefore bills one call's
+ * input and cache tokens once per block and double-counts output as well —
+ * on this run, 1442 records for 717 actual calls, inflating modeled cost ~1.7x.
+ *
+ * Correct aggregation: group by `requestId`, take the input side once, and take
+ * output as the maximum (the final cumulative snapshot). Records without a
+ * requestId are treated as their own call rather than merged.
+ */
+function collapseToApiCalls(messages) {
+  const groups = new Map();
+  for (const [index, message] of messages.entries()) {
+    const key = message.requestId ?? `__no_request_id__${index}`;
+    (groups.get(key) ?? groups.set(key, []).get(key)).push(message);
+  }
+  const calls = [];
+  for (const group of groups.values()) {
+    const first = group[0].usage ?? {};
+    const outputs = group.map((m) => m.usage?.output_tokens).filter((v) => typeof v === "number");
+    calls.push({
+      ...first,
+      output_tokens: outputs.length ? Math.max(...outputs) : undefined
+    });
+  }
+  return calls;
+}
+
 /** Deterministic aggregation. Absent fields stay absent — never zero-filled. */
 function aggregate(messages) {
   const fields = ["input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"];
   const totals = {};
-  for (const message of messages) {
+  for (const usage of collapseToApiCalls(messages)) {
     for (const field of fields) {
-      const value = message.usage?.[field];
+      const value = usage?.[field];
       if (typeof value !== "number") continue;
       totals[field] = (totals[field] ?? 0) + value;
     }
@@ -129,6 +162,7 @@ const invocations = roster.invocations.map((invocation) => {
     status: messages.length ? "captured" : "missing",
     transcript: file,
     messageCount: messages.length,
+    apiCallCount: collapseToApiCalls(messages).length,
     messages,
     totals: aggregate(messages)
   };
@@ -147,7 +181,7 @@ const output = {
   generatedAtUtc: new Date().toISOString(),
   provider: "anthropic (claude-code agent harness)",
   source: "per-subagent transcripts written by the agent harness; payloads copied verbatim",
-  aggregation: "per invocation: field-wise sum over that subagent's assistant messages. summedAllFields = input + output + cache_read + cache_creation. Absent fields are omitted, never zero-filled.",
+  aggregation: "per invocation: transcript records are first collapsed to one record per API call by requestId (the harness writes one record per streamed content block, repeating the call's usage snapshot; input side taken once, output taken as the max/final snapshot), then summed field-wise. summedAllFields = input + output + cache_read + cache_creation. Absent fields are omitted, never zero-filled.",
   comparabilityNote:
     "Anthropic reports cache_read_input_tokens and cache_creation_input_tokens separately from input_tokens; the Codex app-server reports cachedInputTokens and cacheWriteInputTokens inside its own totals. summedAllFields is raw processed tokens, NOT provider-billed cost, and the two providers' cache accounting is not assumed equivalent. S3 must state which basis it uses; the raw payloads are preserved here so any basis can be recomputed.",
   invocationCount: invocations.length,

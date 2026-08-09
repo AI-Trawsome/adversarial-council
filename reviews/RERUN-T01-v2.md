@@ -76,6 +76,8 @@ Both arms settled every finding; no disputes survived to close in either.
 | A (critic + defender) | 47,172 | 179 | 390,235 | 5,828,849 | 95 |
 | construction | 2,935 | 24 | 102,422 | 291,246 | 12 |
 
+> ⚠️ **The Claude token figures in the table above are inflated ~1.7× — see `reviews/ERRATA.md` E-002.** They summed transcript records without collapsing per-content-block duplicates. Superseded figures are preserved there. The corrected, frozen S3 basis (amendment A-003) is **modeled API-equivalent dollars per provider**: T01 Arm A **$3.75**, Arm B **$3.14** (of which Codex $0.22), **B/A 0.84×**. Regenerate with `node bench/compute-s3-cost.mjs`.
+
 **Do not compare the two tables by their largest column.** Anthropic reports `cache_read_input_tokens` per message, and a 90-message agent turn re-reads its cached context every message, so raw processed tokens reach millions without corresponding work or cost. The Codex app-server reports a single per-turn total with cached input *inside* it. Summing both naively would say Arm A costs 25× Arm B, which is an artifact of two different accounting conventions, not a fact about the arms.
 
 On a non-cache-read basis (`output + fresh input + cache write`): **Arm B 332,777 · Arm A 437,586**, plus Codex's 87,796 on Arm B's side — Arm B ≈ 420,573 against Arm A's 437,586, roughly parity.
@@ -103,5 +105,5 @@ _scrubbed/T01/, _scrubbed/T01-MANIFEST.json
 
 ## 7. Open before the scoring run
 
-1. **Name S3's cost basis** (§4). This is the one item that can still invalidate a gating verdict after the fact.
+1. ~~**Name S3's cost basis**~~ — **settled.** Frozen as amendment A-003 (consult 005): modeled API-equivalent dollars computed per provider from `bench/rate-card-frozen.json`, gated on the median of per-task ratios. Two errata surfaced in the process; see `reviews/ERRATA.md`.
 2. Everything else from the earlier records is closed: staging countersigned, usage persisted, scratch policy frozen, framing frozen.

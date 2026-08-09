@@ -1,0 +1,57 @@
+{
+  "rateCardVersion": 1,
+  "frozenAtUtc": "2026-08-09T05:10:00Z",
+  "frozenBefore": "T07",
+  "currency": "USD",
+  "unit": "USD per 1,000,000 tokens",
+  "purpose": "Frozen inputs for BENCHMARK.md §4 criterion S3. Amendment A-003 in reviews/BENCHMARK-AMENDMENTS.md.",
+  "policy": {
+    "gate": "median over tasks of (Arm B modeled dollars / Arm A modeled dollars) — median of per-task ratios, never a ratio of aggregates",
+    "scope": "every billed critic and defender invocation in the arm, including malformed-output retries",
+    "excluded": "artifact construction and contamination audit — shared per-task overhead, incurred once regardless of arm",
+    "retroactivity": "NEVER update historical task costs when public rates change later; this card is frozen for all 25 tasks",
+    "labelling": "these figures are MODELED API-EQUIVALENT cost, not observed billed cost"
+  },
+  "providers": {
+    "anthropic": {
+      "modelIdentity": "claude-opus-5",
+      "identitySource": "session configuration — the model this harness runs under, recorded in each task's run record",
+      "rateSource": "Anthropic model pricing, retrieved via the bundled claude-api skill reference, 2026-08-09",
+      "rates": {
+        "freshInput": 5.0,
+        "output": 25.0,
+        "cacheRead": 0.5,
+        "cacheWrite5m": 6.25,
+        "cacheWrite1h": 10.0
+      },
+      "derivation": "cacheRead = 0.1 x freshInput; cacheWrite5m = 1.25 x freshInput; cacheWrite1h = 2.0 x freshInput — Anthropic's published multipliers",
+      "tokenClassMapping": {
+        "freshInput": "usage.input_tokens",
+        "output": "usage.output_tokens",
+        "cacheRead": "usage.cache_read_input_tokens",
+        "cacheWrite5m": "usage.cache_creation.ephemeral_5m_input_tokens",
+        "cacheWrite1h": "usage.cache_creation.ephemeral_1h_input_tokens",
+        "fallback": "when usage.cache_creation is absent, bill usage.cache_creation_input_tokens at the 1h rate — the conservative (higher) of the two TTL rates"
+      }
+    },
+    "openai": {
+      "modelIdentity": "gpt-5.6-sol",
+      "identitySource": "EVIDENCE-BASED, not a chosen convention: turn_context.model in the Codex CLI's own rollout session logs under ~/.codex/sessions/, recorded independently for all six Arm B runs (T01-T06), unanimous, cli_version 0.147.0",
+      "rateSource": "https://developers.openai.com/api/docs/pricing, retrieved 2026-08-09",
+      "rates": {
+        "freshInput": 5.0,
+        "output": 30.0,
+        "cacheRead": 0.5,
+        "cacheWrite": 5.0
+      },
+      "derivation": "freshInput, cacheRead (published as 'cached input') and output are read directly from the rate card. The card publishes NO separate cache-write rate, so cache-write tokens are billed at the fresh-input rate — the conservative choice, since any real cache-write discount would only lower Arm B.",
+      "tokenClassMapping": {
+        "freshInput": "tokenUsage.last.inputTokens MINUS tokenUsage.last.cachedInputTokens — cachedInputTokens is a SUBSET of inputTokens in this protocol, and double-counting it is exactly the error corrected by the T02-T06 erratum",
+        "output": "tokenUsage.last.outputTokens",
+        "cacheRead": "tokenUsage.last.cachedInputTokens",
+        "cacheWrite": "tokenUsage.last.cacheWriteInputTokens"
+      }
+    }
+  },
+  "subscriptionNote": "Codex ran under a ChatGPT subscription during this benchmark, so its OBSERVED billed cost is subscription-flat and its marginal cash outlay is zero. Zero is not used in the S3 gate: it describes this deployment's billing arrangement rather than the resource cost of the council, and it is the convention that flatters Arm B. Modeled API-equivalent cost is gated; subscription marginal cost is reported separately as zero and never gated."
+}

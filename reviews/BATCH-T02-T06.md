@@ -58,17 +58,23 @@ Reviewers executed real reproductions in most debates under the frozen scratch-e
 
 Stated on the **non-cache-read basis** (`output + fresh input + cache write`) for Claude, plus runner-captured Codex totals. Claude usage is raw per-message payloads copied verbatim from the harness's per-subagent transcripts: **34 invocations, 34 captured, 0 missing.**
 
-| task | Arm A | Arm B | B/A |
-|---|---|---|---|
-| T02 | 741,754 | 649,809 | 0.88× |
-| T03 | 1,616,118 | 371,404 | 0.23× |
-| T04 | 391,050 | 437,687 | 1.12× |
-| T05 | 763,589 | 197,079 | 0.26× |
-| T06 | 492,307 | 403,352 | 0.82× |
+> ⚠️ **The table originally published here was wrong twice over — see `reviews/ERRATA.md` (E-001 and E-002).** It added Codex per-turn `totalTokens` into a basis that excludes cache reads (double-counting cached input), and it summed Claude transcript records without collapsing per-content-block duplicates (inflating every Claude figure ~1.7×). Superseded figures are preserved in the errata; both corrections move in Arm B's favour. The table below is the corrected one.
 
-Median B/A across T02–T06: **0.82×**, well inside S3's ≤ 3× ceiling. Every Codex turn recorded `usageStatus: captured`; every Arm A round recorded `not-applicable`. No round recorded `missing`.
+S3's basis is now frozen as **modeled API-equivalent dollars, computed per provider from `bench/rate-card-frozen.json`** (amendment A-003). Regenerate with `node bench/compute-s3-cost.mjs`.
 
-**This basis is still provisional.** As recorded in `RERUN-T01-v2.md` §4, S3 names no basis, and the choice is not neutral — including cache reads would inflate Arm A by an order of magnitude for reasons that have nothing to do with work performed. The basis must be fixed before scoring, and it must be fixed without reference to which arm it favours. It is now visible that on this basis Arm B is cheaper on 4 of 5 tasks, which is exactly why the decision should not wait.
+| task | Arm A | Arm B | of which Codex | B/A |
+|---|---|---|---|---|
+| T02 | $6.25 | $4.63 | $0.39 (8.4%) | 0.74× |
+| T03 | $12.80 | $2.71 | $0.23 (8.3%) | 0.21× |
+| T04 | $4.37 | $2.78 | $0.15 (5.5%) | 0.64× |
+| T05 | $6.95 | $1.60 | $0.07 (4.2%) | 0.23× |
+| T06 | $4.02 | $2.73 | $0.14 (5.3%) | 0.68× |
+
+Median B/A across T01–T06: **0.658×**, well inside S3's ≤ 3× ceiling. Arm B is cheaper on **every** task — the one apparent exception (T04 at 1.12×) was an artifact of E-001.
+
+Every Codex turn recorded `usageStatus: captured`; every Arm A round recorded `not-applicable`. No round recorded `missing`.
+
+These are **modeled API-equivalent** figures, not observed spend: Codex ran on a ChatGPT subscription whose marginal cash cost is $0. Zero is reported but deliberately not gated, because it flatters Arm B — see A-003.
 
 ## 5. Process errors, recorded
 
