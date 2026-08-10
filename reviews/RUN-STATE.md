@@ -121,7 +121,13 @@ Order is flexible but **all must complete before grading** (amended Sequencing, 
 - **T12 constructor read T11's artifact directory** — exposure `SIDECAR FIELDS`. Non-contaminating: T11 already closed, different repositories (ioredis vs undici), constructors do not review. Caused by a brief gap; the clause is now standard.
 - **T12 Arm A round-1 critic named a repository source path** in its final message, breaching the control-plane rule. Same class as the T01 and T03 exposures — locates the slice, which reviewers see anyway, not the defect. Closing instruction has been strengthened to name the failure mode explicitly (status lines, quoted commands, sweep results, "in passing").
 - **Fidelity variables can be reviewer-dependent.** On T12 the Arm A critic and defender initially reported incompatible suite-runnability results; the round-2 critic re-established it and corrected its own round-1 note. Record fidelity per reviewer, not as one fact per task.
-- **Protocol semantics:** a claimant responding `accept` to its **own** contested finding is recorded as abandoning it entirely (`withdrawn`), not narrowing it. Cost T11 Arm A two findings whose substance a defender had accepted; the ledger retains the substance, the status field understates. Brief critics about this explicitly.
+- **Protocol semantics (two stumbles so far — brief both sides explicitly).** The ledger's transition table for a claimant acting on its **own** contested finding (status `rejected` or `partially-accepted`) is:
+  - `accept` → **withdrawn**, terminal, abandons the whole finding. Cost T11 Arm A two findings whose substance a defender had already accepted; the ledger retains the substance, the status field understates. There is **no** way to narrow a finding via `accept`.
+  - `reject` or `partial` **with new checkable evidence** → **open (reopened)**. This is the only legal way to "reopen with corrected scope."
+  - `reject` without new evidence → unchanged, dispute stands.
+
+  T13 Arm A's round-2 defender tried to express a reopening by **filing a new finding under the original id**, which the runner refused as a duplicate id; its first correction filed a separate finding instead, which would have left the original sitting contested with a mistaken mitigation plus a near-duplicate superseding it in prose. Corrected to use the response mechanism. **Put the transition table in reviewer briefs**, not just the withdrawal warning.
+- **The runner's validation has now stopped two malformed messages at the boundary** — T03's stale-round refusal (previous batch) and T13 Arm A's duplicate id. In both cases no invalid state entered the ledger and the phase was unchanged, so the debate resumed cleanly after correction. Worth reporting as evidence the neutral-runner design earns its cost.
 
 ---
 
