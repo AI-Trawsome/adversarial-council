@@ -25,17 +25,12 @@ Both amendments were submitted for external ruling before adoption and approved.
 | A-002-E1 | Agent-instruction files excluded from scrubbed checkouts | countersigned, implemented 2026-08-08 | consult 002 |
 | A-003 | S3 cost basis: provider-specific frozen API-equivalent dollars | approved, implemented 2026-08-09 | consult 005 §1–2 |
 | R-001 | Subagent isolation sufficiency; T01 dataset treatment | approved, ruling only — amends no rule | consult 001 §3 |
-| **Q-001** | **Shared reviewer scratch directory; T01–T06 treatment** | **open — awaiting ruling** | — |
-| **Q-002** | **T10/T11 share a source path; aggregate treatment** | **open — awaiting ruling** | — |
+| Q-001 | Shared reviewer scratch directory; T01–T06 treatment | **ruled 2026-08-09 — re-run both arms of T01–T06 (Option 2b)** | consult 006 |
+| Q-002 | T10/T11 share a source path; aggregate treatment | **ruled 2026-08-09 — 25-task primary + T11-dropped sensitivity (Option C)** | consult 006 |
 
-Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07. ☑ A-002-E1 — approved 2026-08-08.
+Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07. ☑ A-002-E1 — approved 2026-08-08. ☐ Q-001 ☐ Q-002 — ruled 2026-08-09, approval pending.
 
-**Q-001 and Q-002 are questions, not amendments.** Nothing has been changed under either, and neither blocks continuing the run. Both were found while running T07–T11 and are stated in full in `reviews/BATCH-T07-T11.md` §6, with the evidence needed to rule on them.
-
-- **Q-001** — every reviewer subagent in a session shares one scratch directory, and reproduction filenames written there name the defect mechanism. T07 Arm A was voided and re-run under per-seat isolation; T01–T06 ran under the uncorrected condition in both arms and cannot be re-run as part of that batch. The exposure can only favour whichever arm ran second, and arm order was coin-flipped per task, so it does not bias systematically toward A or B — but it is real per-task noise on the primary metric. This is the failure mode R-001 explicitly warned about: its qualification, not its approval, is what turned out to be load-bearing.
-- **Q-002** — T10 and T11 slice the same source file at two different commits, so they are not statistically independent tasks. Nothing leaks between them, and the frozen task list contains both; the question is only how the aggregate should treat them.
-
-Both bear on dataset composition, which is why they are indexed here rather than only in the batch record. Grading is deferred until all 25 tasks have run, so there is time to rule on both without stalling the run.
+**Third authorization** (Q-001, Q-002): consult exchange 006, 2026-08-10T01:03Z (local 2026-08-09). Committed verbatim at `reviews/CHATGPT-RULING-019-q001-q002-isolation-independence.md`, `sha256 3c64c0179b051c1a63fc455314002c2806f1c211564adc30419abb96769bb7fa` — byte-identical to the runtime log the plugin wrote at `.council/consult/006-2026-08-10T01-03-27-642Z.md`, which is gitignored runtime output. The submission is `reviews/CLAUDE-QUERY-018-isolation-and-independence.md`, `sha256 3e98d67434191d1abce3697a013e6395d0db9a49576f45d0a338cfa3b2c7eddb`. Both questions are stated in full in `reviews/BATCH-T07-T11.md` §6.
 
 **Second authorization** (A-002-E1 only): consult exchange 002, 2026-08-08T14:51Z. Committed verbatim at `reviews/CHATGPT-RULING-014-a002-extension.md`, `sha256 3b7b6c28702e7e8bac7f798b251ba3f20fbcdd3e9195e43eddbdf56966c2153c`.
 
@@ -181,6 +176,64 @@ If the attestation conditions above cannot be demonstrated at re-run time, T01 r
 
 **Implementation record:** implemented 2026-08-09. `bench/rate-card-frozen.json` + `bench/compute-s3-cost.mjs` (deterministic, reads only archived raw payloads). Independent recomputation by a separate agent, forbidden to read the script, reproduced every figure to the cent and additionally exposed erratum **E-002** — see `reviews/ERRATA.md`. Corrected T01–T06: median B/A **0.658×** against a 3.0× ceiling; Codex is 4.2%–8.4% of Arm B's modeled cost.
 
+## Q-001 — Reviewer scratch isolation: T01–T06 are re-run in both arms
+
+**Rules affected:** R-001's isolation attestation, and therefore the validity of every T01–T06 scoring debate.
+
+**The defect.** Every reviewer subagent in an orchestrator session shared one scratch directory. Reviewers write reproduction scripts there under the frozen scratch policy, and a reproduction filename names the defect mechanism. Because arms run sequentially in one session, the **second-running arm's reviewers worked in a directory already holding the first arm's filenames for the same task**. In T01–T06 that directory *was* each reviewer's own working directory, so a routine listing sufficed.
+
+**Why R-001's attestation did not cover it.** No brief told reviewers the directory was off-limits, and the leak needs no file read — the filename alone carries the mechanism. A reviewer listing its own working directory would have been contaminated without violating any instruction and without cause to report it. R-001 anticipated exactly this: *"a subagent that can read anything can read the fix commit."* Its qualification, not its approval, proved load-bearing.
+
+**Ruling (consult 006).** Option 2b, unconditional. The proposed sensitivity-analysis trigger was **rejected** on a point worth preserving: agreement between a 25-task and a 19-task analysis *"could occur despite contamination, particularly with coarse pass/fail gates"* — such agreement would show the threshold verdict was unchanged, not that the recorded findings were uncontaminated, so it *"cannot credibly authorize retaining the affected debates."* Option 2a was rejected for preserving an avoidable within-pair environment asymmetry and contradicting the R-001 precedent.
+
+The orchestrator's characterization of cross-task exposure as benign was **not accepted**: a filename from another task can prime a bug mechanism, especially within one repository or across dependent commits. This does not widen the ordered re-run beyond T01–T06, but the T07–T11 audit must test actual cross-task exposure rather than assume it away.
+
+**Binding conditions, all twelve:**
+
+1. Re-run both arms of T01–T06 under the final per-seat isolation policy; supersede all twelve existing scoring debates and preserve them under explicit `VOIDED` labels.
+2. Follow the original pre-registered arm order per task.
+3. Fresh review-repository copies, debate contexts, Codex threads, subagents, and opaque scratch seats.
+4. No participant may list, glob, traverse, or inspect a parent or sibling scratch directory; temp files, bytecode, package caches, test caches and virtualenvs redirect into its own seat.
+5. Archive every participant's control-plane declaration of whether it encountered any foreign scratch path, filename, content, or directory listing.
+6. A participant that encounters a foreign scratch filename or content **voids that arm immediately**; if the encounter could expose task-specific information to the paired arm, both arms are re-run.
+7. Verify each seat is empty before its arm and unreachable from others after — via symlinks, shared caches, environment variables, or inherited working directories.
+8. Do not copy reproduction files from voided runs into new seats.
+9. Same finalized staging, prompts, cost capture, provider-rate policy, machine class and harness configuration for both arms.
+10. Record provider/model drift and dates, but **do not** use unavoidable drift as a reason to retain the known-defective runs.
+11. Exclude voided-run usage from S3; report it separately as **benchmark remediation overhead**, not scoring cost.
+12. Before grading, audit T07–T11 against the final isolation policy. T07 is valid only if both retained arms used private seats and neither received intelligible foreign scratch information. A prohibited parent listing that exposed **only opaque, undecodable seat names** may be recorded as a protocol deviation without voiding; exposure to a **descriptive filename or file content** triggers the applicable re-run rule.
+
+A 19-task sensitivity analysis may still be reported as a diagnostic, but it is not a substitute for remediation and must not determine whether the re-runs enter the dataset.
+
+**Status:** ordered, not yet executed. Scheduled alongside the remaining batches; T12–T25 proceed in the meantime. The two disclosed T07–T11 parent listings both exposed only opaque seat names (`_scratch/s<12-hex>`, with the decoding map held outside the tree), which condition 12 admits as a recorded deviation rather than a void — but that determination belongs to the condition-12 audit, not to this note.
+
+---
+
+## Q-002 — T10/T11 dependence: 25-task primary stands, with a T11-dropped sensitivity
+
+**Rule affected:** §4's aggregation over 25 tasks.
+
+**The facts.** T10 and T11 are identity slices of the same source file at two different commits; T11's fix is a follow-up to T10's, so T11's buggy tree contains T10's fix as ordinary code. Nothing leaks between them — fresh contexts, per-debate Codex threads — but they are not independent observations, and if T11's defect predates T10's buggy SHA then T10's reviewers could legitimately surface it. Appendix A's pre-freeze screens covered CVEs, backports, class caps and language balance, not same-file adjacency.
+
+**Ruling (consult 006).** Option C. Both tasks stay in the frozen primary dataset: their construction is valid, their contexts are isolated, and substitution was never pre-registered for statistical dependence. Option A was rejected because no cluster-combination rule was pre-registered and different rules would change S1's numerator; Option B alone was insufficient because the dependence can be quantified without touching the primary.
+
+**Binding conditions:**
+
+1. The 25-task analysis remains the sole pre-registered primary.
+2. Remove T11 from **both arms** in the sensitivity analysis; never from one metric or arm only.
+3. Recompute S1, S2 and S3 from the remaining 24 paired tasks — do not subtract T11 from a displayed total.
+4. Apply the frozen thresholds literally unless BENCHMARK.md already defines an N-dependent formula; do not rescale for N=24.
+5. Report primary and sensitivity together with numerators, denominators, medians and pass/fail outcomes.
+6. On divergence, report it as a robustness limitation. Do not select the more favourable analysis, retrospectively combine the pair, or substitute a task.
+7. Grade under the frozen task-local rules. If T10 identifies the defect T11's fix addresses, it may count as a verified additional finding for T10 if it independently satisfies metric 2, and as ground-truth detection for T11 if found there. Disclose the cross-task duplication.
+8. **Before grading, run a contamination-safe dependency screen across all 25 tasks** for: identical source files or identity slices; overlapping artifact ranges; ancestor/descendant commit relationships in the same repository; fixes already present in another task's buggy tree; and direct follow-up or superseding fixes.
+9. The auditor exposes only a dependency matrix and mechanical ordering facts before grading — never defect descriptions.
+10. If further dependent components are found, **pause grading** and submit one uniform component-level sensitivity rule for review. Do not improvise pair-by-pair handling once outcomes are visible.
+
+**Status:** conditions 1–7 bind at grading time. Condition 8's screen is scheduled before grading and is a superset of the T07–T11 same-path check already performed.
+
+---
+
 ## Sequencing
 
 The order is forced by dependency, not preference:
@@ -191,3 +244,11 @@ The order is forced by dependency, not preference:
 4. Begin the scoring run over all 25 tasks.
 
 No task result counts toward S1/S2/S3 until steps 1–3 are complete.
+
+**Amended 2026-08-09 by consult 006.** Steps 1–4 stand; three obligations are added after step 4 and before grading:
+
+5. Re-run both arms of T01–T06 under per-seat scratch isolation (Q-001, twelve conditions). The superseded debates are preserved as `VOIDED` and their usage is excluded from S3, reported instead as remediation overhead.
+6. Audit T07–T11 against the final isolation policy (Q-001 condition 12), testing actual cross-task exposure rather than assuming it benign.
+7. Run the contamination-safe dependency screen across all 25 tasks (Q-002 condition 8). If it finds dependent components beyond T10/T11, grading pauses for one uniform component-level rule (Q-002 condition 10).
+
+Steps 5–7 may run in any order relative to the remaining task batches, but all three must complete before any grading begins. No T01–T06 result counts toward S1/S2/S3 until step 5 is complete.
