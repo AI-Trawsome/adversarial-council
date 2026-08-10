@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-10, after **T12 closed (both arms)**; T13 Arm B round 1 done.
+**Last updated:** 2026-08-10, after **T13 closed (both arms)**. Next: T14 (A-first).
 
 ---
 
@@ -26,8 +26,8 @@ The operator has authorized running to completion without check-ins, and authori
 | T07 | closed | Arm A voided once for shared-scratch exposure, re-run clean; `_rerun2/T07-armA-VOIDED/` preserved |
 | T08–T11 | closed | first batch under per-seat isolation |
 | T12 | **closed** | A: 3 rounds, 6 findings (codex 5, claude 1), all accepted, 1 crit/4 high/1 med, NO-SHIP. B: 1 round, 2 findings, both accepted, 2 high, NO-SHIP. 0 flags both arms |
-| T13 | **Arm B in progress** | round 1 critique done (2 findings, 1 high 1 med), defender pending |
-| T14–T16 | constructed, scrubbed, staged, audited — **not yet run** | ready to run |
+| T13 | **closed** | B: 3 rounds, 5 findings (codex 2, claude 3), all accepted, 2 high/3 med, NO-SHIP. A: 3 rounds, 6 findings (codex 4, claude 2), all accepted, 1 high/4 med/1 low, NO-SHIP. 0 flags both arms |
+| T14–T16 | constructed, scrubbed, staged, audited — **not yet run** | ready to run; T14 is A-first |
 | T17, T18, T21–T25, T19r, T20r | not started | 9 tasks remaining |
 
 ### T12–T16 construction (done, audited, staged)
@@ -127,6 +127,7 @@ Order is flexible but **all must complete before grading** (amended Sequencing, 
   - `reject` without new evidence → unchanged, dispute stands.
 
   T13 Arm A's round-2 defender tried to express a reopening by **filing a new finding under the original id**, which the runner refused as a duplicate id; its first correction filed a separate finding instead, which would have left the original sitting contested with a mistaken mitigation plus a near-duplicate superseding it in prose. Corrected to use the response mechanism. **Put the transition table in reviewer briefs**, not just the withdrawal warning.
+- **A settled finding's fields cannot be amended.** T13 Arm A's closing defender concluded the recorded `confidence` on a settled finding understates it (0.75 vs an honest 0.9, severity unchanged) and found no legal mechanism to correct it — the ledger closes at the original figure with the disagreement in `notes` only. Graders should read `notes` alongside the fields.
 - **The runner's validation has now stopped two malformed messages at the boundary** — T03's stale-round refusal (previous batch) and T13 Arm A's duplicate id. In both cases no invalid state entered the ledger and the phase was unchanged, so the debate resumed cleanly after correction. Worth reporting as evidence the neutral-runner design earns its cost.
 
 ---
