@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-10, after T12 Arm A closed and T12 Arm B round 1.
+**Last updated:** 2026-08-10, after **T12 closed (both arms)**; T13 Arm B round 1 done.
 
 ---
 
@@ -25,8 +25,9 @@ The operator has authorized running to completion without check-ins, and authori
 | T01–T06 | closed, **but superseded by order** | must be re-run under Q-001; see §5 |
 | T07 | closed | Arm A voided once for shared-scratch exposure, re-run clean; `_rerun2/T07-armA-VOIDED/` preserved |
 | T08–T11 | closed | first batch under per-seat isolation |
-| T12 | **Arm A closed; Arm B in progress** | Arm B round 1 critique done, defender pending |
-| T13–T16 | constructed, scrubbed, staged, audited — **not yet run** | ready to run |
+| T12 | **closed** | A: 3 rounds, 6 findings (codex 5, claude 1), all accepted, 1 crit/4 high/1 med, NO-SHIP. B: 1 round, 2 findings, both accepted, 2 high, NO-SHIP. 0 flags both arms |
+| T13 | **Arm B in progress** | round 1 critique done (2 findings, 1 high 1 med), defender pending |
+| T14–T16 | constructed, scrubbed, staged, audited — **not yet run** | ready to run |
 | T17, T18, T21–T25, T19r, T20r | not started | 9 tasks remaining |
 
 ### T12–T16 construction (done, audited, staged)
@@ -48,7 +49,8 @@ T08 `f83daecb81e50d718b7f57f1800d179f00933377954623662134c3ab51b36ba3` ·
 T09 `a753f1fd5fc097cfb73a08c5be8c1965af880ac3c48854834e2ef41e369b6284` ·
 T10 `6e82179453b1769ed331c1a760555ca913750203b954d422c5971f8d7632bdfc` ·
 T11 `f2af7b684478a483d9b94390b61ba0ca3c215cdecba72f2344a901213771dd0b` ·
-T12 `5c855ad17c130e10ff7492f8bf39a890b0b7810f7d047ca26e3419dded072fea`
+T12 `5c855ad17c130e10ff7492f8bf39a890b0b7810f7d047ca26e3419dded072fea` ·
+T13 `b9083bd17d82d418114f9a54693b8e293beaa59856a4c6a343538906b48e9cc4`
 
 ---
 
