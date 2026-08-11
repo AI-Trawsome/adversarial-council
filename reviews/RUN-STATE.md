@@ -78,7 +78,7 @@ The operator has authorized running to completion without check-ins, and authori
 | T13 | **closed** | B: 3 rounds, 5 findings (codex 2, claude 3), all accepted, 2 high/3 med, NO-SHIP. A: 3 rounds, 6 findings (codex 4, claude 2), all accepted, 1 high/4 med/1 low, NO-SHIP. 0 flags both arms |
 | T14 | **closed** | A: 3 rounds, 4 findings (codex 3, claude 1), 2 accepted + 2 partially-accepted, 2 crit/2 high, NO-SHIP. B: 3 rounds, 4 findings (codex 2, claude 2), 3 accepted + 1 partially-accepted, 3 high/1 med, NO-SHIP. 0 flags both arms |
 | T15 | **closed** | First Arm A attempt VOIDED under A-004 (schema asymmetry); restarted with fresh seats. A: 1 round, 3 findings (codex 3), all accepted, 1 high/1 med/1 low, NO-SHIP. B: 1 round, 1 finding (codex 1), accepted, 1 high, NO-SHIP. 0 flags both arms; both trees intact |
-| T16 | constructed, scrubbed, staged, audited — **not yet run** | **T16 is next, B-first** |
+| T16 | **B closed, A in flight** | B: 1 round, 3 findings (codex 3), all accepted, 1 high/2 med, NO-SHIP, 0 flags, tree intact. A: debate `dbt-2026-08-11-75c222`, round-1 critic running. `context.md` both arms `bdcadb48549621c45bbd1235687043abd420159574500558619366828e10ec93` |
 | T17, T18, T21–T25, T19r, T20r | not started | 9 tasks remaining |
 
 ### T12–T16 construction (done, audited, staged)
