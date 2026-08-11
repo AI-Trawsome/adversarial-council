@@ -2,7 +2,33 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-10, after **T13 closed (both arms)**. Next: T14 (A-first).
+**Last updated:** 2026-08-11, after **T14 closed (both arms)**. **STOPPED CLEANLY AT A TASK BOUNDARY — see §0 to resume.**
+
+---
+
+## 0. RESUME HERE
+
+**Stopped cleanly after T14 closed. Nothing is mid-flight; no debate is open; no subagent is running.**
+
+**The single next action:** start **T15**, which is **A-first** per the pre-recorded schedule. T15 is already constructed, scrubbed, staged and audited — no construction work is needed. Begin at step 8 of §3:
+
+```
+source <scratchpad>/armlib.sh      # recreate from §3.1 if the scratchpad is gone
+arm_init T15 A
+arm_prompt_A T15 1
+# then spawn the Arm A critic subagent (Node/JS brief; see §7 for required clauses)
+```
+
+Seats for T15 are in `_seatmap/SEAT-MAP.json` under `T15-A-critic`, `T15-A-def`, `T15-B-critic`, `T15-B-def`.
+
+**After T15, in order:** T16 (B-first) → then the batch-level work below → then T17, T18, T21–T25, T19r, T20r → then the three ordered remediation items in §5.
+
+**Owed at the end of the T12–T16 batch (not yet done):**
+- `collect-claude-usage.mjs` with a roster covering every T12–T16 invocation
+- `compute-s3-cost.mjs` over all runs
+- `reviews/BATCH-T12-T16.md`
+
+Agent ids for the T12–T14 invocations are **not recoverable from disk** — the usage roster for this batch must be rebuilt from the subagent transcript directory (`~/.claude/projects/*/*/subagents/agent-*.jsonl`) by matching timestamps to the debate round boundaries in each arm's `debate/debate.json`. Budget time for that. From T15 onward, **record each agent id in the roster as the subagent is spawned** rather than reconstructing later.
 
 ---
 
@@ -27,7 +53,8 @@ The operator has authorized running to completion without check-ins, and authori
 | T08–T11 | closed | first batch under per-seat isolation |
 | T12 | **closed** | A: 3 rounds, 6 findings (codex 5, claude 1), all accepted, 1 crit/4 high/1 med, NO-SHIP. B: 1 round, 2 findings, both accepted, 2 high, NO-SHIP. 0 flags both arms |
 | T13 | **closed** | B: 3 rounds, 5 findings (codex 2, claude 3), all accepted, 2 high/3 med, NO-SHIP. A: 3 rounds, 6 findings (codex 4, claude 2), all accepted, 1 high/4 med/1 low, NO-SHIP. 0 flags both arms |
-| T14–T16 | constructed, scrubbed, staged, audited — **not yet run** | ready to run; T14 is A-first |
+| T14 | **closed** | A: 3 rounds, 4 findings (codex 3, claude 1), 2 accepted + 2 partially-accepted, 2 crit/2 high, NO-SHIP. B: 3 rounds, 4 findings (codex 2, claude 2), 3 accepted + 1 partially-accepted, 3 high/1 med, NO-SHIP. 0 flags both arms |
+| T15–T16 | constructed, scrubbed, staged, audited — **not yet run** | **T15 is next, A-first**; T16 is B-first |
 | T17, T18, T21–T25, T19r, T20r | not started | 9 tasks remaining |
 
 ### T12–T16 construction (done, audited, staged)
@@ -50,7 +77,8 @@ T09 `a753f1fd5fc097cfb73a08c5be8c1965af880ac3c48854834e2ef41e369b6284` ·
 T10 `6e82179453b1769ed331c1a760555ca913750203b954d422c5971f8d7632bdfc` ·
 T11 `f2af7b684478a483d9b94390b61ba0ca3c215cdecba72f2344a901213771dd0b` ·
 T12 `5c855ad17c130e10ff7492f8bf39a890b0b7810f7d047ca26e3419dded072fea` ·
-T13 `b9083bd17d82d418114f9a54693b8e293beaa59856a4c6a343538906b48e9cc4`
+T13 `b9083bd17d82d418114f9a54693b8e293beaa59856a4c6a343538906b48e9cc4` ·
+T14 `8ca3e62e0f683d8f9c210c441a690339b25845bc3232c7b68735b211fc0959ae`
 
 ---
 
@@ -104,7 +132,7 @@ A-first: T03, T04, T06, T08, T11, T12, T14, T15, T17, T25
 
 Order is flexible but **all must complete before grading** (amended Sequencing, consult 006).
 
-1. **Finish T12** (Arm B), then **T13–T16**, then **T17, T18, T21–T25, T19r, T20r**.
+1. **T15, T16**, then **T17, T18, T21–T25, T19r, T20r**. (T12–T14 done.)
 2. **Q-001 re-run: both arms of T01–T06** under per-seat isolation. Twelve binding conditions in `BENCHMARK-AMENDMENTS.md` §Q-001. Supersede the twelve existing debates as `VOIDED`; original arm order; fresh everything; usage excluded from S3 and reported as **remediation overhead**.
 3. **Q-001 condition 12: audit T07–T11** against the final isolation policy. Must test *actual* cross-task exposure, not assume it benign. Opaque seat names → recordable deviation; descriptive filename/content → re-run rule.
 4. **Q-002 condition 8: dependency screen across all 25 tasks** — identity slices, overlapping ranges, ancestor/descendant commits, fixes present in another task's buggy tree, follow-up/superseding fixes. Auditor exposes only a matrix. If more dependent components found, **pause and consult** for one uniform rule.
@@ -128,6 +156,9 @@ Order is flexible but **all must complete before grading** (amended Sequencing, 
 
   T13 Arm A's round-2 defender tried to express a reopening by **filing a new finding under the original id**, which the runner refused as a duplicate id; its first correction filed a separate finding instead, which would have left the original sitting contested with a mistaken mitigation plus a near-duplicate superseding it in prose. Corrected to use the response mechanism. **Put the transition table in reviewer briefs**, not just the withdrawal warning.
 - **A settled finding's fields cannot be amended.** T13 Arm A's closing defender concluded the recorded `confidence` on a settled finding understates it (0.75 vs an honest 0.9, severity unchanged) and found no legal mechanism to correct it — the ledger closes at the original figure with the disagreement in `notes` only. Graders should read `notes` alongside the fields.
+- **zsh does not word-split unquoted parameter expansions.** Routing a probe's argument list through a single variable collapses it into one argv entry, which silently turns crash probes into false negatives — every probe reports survival. **Three seats hit this** (T14 Arm A rounds 1 and 2, and it is now a standing brief warning). Two had to invalidate and regenerate archives they had already written. Brief reviewers to pass arguments literally or use an array.
+- **A reopening is not mechanically required to carry new evidence.** The runner's transition table expects `reject`/`partial` on your own contested finding to come with new checkable evidence, but T14 Arm B's critic reopened the same finding in rounds 2 **and** 3 citing only the defender's own prior outputs. Both times the defender produced fresh evidence rather than arguing from the record. Worth reporting as a gap between the documented expectation and what is enforced; do not assume a reopening means new evidence exists.
+- **Fidelity variables are reviewer-dependent, and severity disputes can outlast mechanism agreement.** T14 closed with `partially-accepted` findings in **both** arms — the first task where disputes survived to close. Mechanism was agreed throughout in both; what persisted was impact and severity. Deciding evidence is recorded in every case.
 - **The runner's validation has now stopped two malformed messages at the boundary** — T03's stale-round refusal (previous batch) and T13 Arm A's duplicate id. In both cases no invalid state entered the ledger and the phase was unchanged, so the debate resumed cleanly after correction. Worth reporting as evidence the neutral-runner design earns its cost.
 
 ---
