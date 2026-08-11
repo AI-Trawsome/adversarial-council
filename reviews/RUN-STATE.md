@@ -2,33 +2,38 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-11, after **T14 closed (both arms)**. **STOPPED CLEANLY AT A TASK BOUNDARY — see §0 to resume.**
+**Last updated:** 2026-08-11, **T15 in flight (Arm A, round 1)**. See §0.
 
 ---
 
 ## 0. RESUME HERE
 
-**Stopped cleanly after T14 closed. Nothing is mid-flight; no debate is open; no subagent is running.**
+**T15 is running. Arm A first, per the pre-recorded schedule.** Debate `dbt-2026-08-11-3ba347`, repo `_rerun2/T15-armA-repo`, logs `_rerun2/T15-armA`.
 
-**The single next action:** start **T15**, which is **A-first** per the pre-recorded schedule. T15 is already constructed, scrubbed, staged and audited — no construction work is needed. Begin at step 8 of §3:
+To pick up mid-task, run `arm_cp T15 A` (recreate `armlib.sh` from §3.1 first if the scratchpad is gone) and read `phase`:
 
-```
-source <scratchpad>/armlib.sh      # recreate from §3.1 if the scratchpad is gone
-arm_init T15 A
-arm_prompt_A T15 1
-# then spawn the Arm A critic subagent (Node/JS brief; see §7 for required clauses)
-```
+| phase | what is owed |
+|---|---|
+| `awaiting-critique` | `arm_prompt_A T15 <round>` → spawn the Arm A critic subagent → it writes `critique-mock-r<N>.json` → `arm_inject_A T15 <N>` |
+| `awaiting-rebuttal` | spawn the defender subagent → it writes `rebuttal-r<N>.json` → `arm_rebut T15 A <N>` |
+| `ready-to-close` | `arm_close T15 A`, then `arm_clean_check T15 A` |
+| `closed` | `arm_init T15 B` and run Arm B (Codex critic via `arm_critique_B`) |
 
-Seats for T15 are in `_seatmap/SEAT-MAP.json` under `T15-A-critic`, `T15-A-def`, `T15-B-critic`, `T15-B-def`.
+Then `arm_context_match T15` once both arms exist — it must print `CONTEXT MATCH`.
+
+Seats for T15/T16 are in `_seatmap/SEAT-MAP.json`. All four T15 seats were verified empty before Arm A started (Q-001 condition 7).
 
 **After T15, in order:** T16 (B-first) → then the batch-level work below → then T17, T18, T21–T25, T19r, T20r → then the three ordered remediation items in §5.
 
-**Owed at the end of the T12–T16 batch (not yet done):**
-- `collect-claude-usage.mjs` with a roster covering every T12–T16 invocation
+**Owed at the end of the T12–T16 batch:**
+- ~~usage roster covering every T12–T14 invocation~~ — **done**, see below
+- `collect-claude-usage.mjs` for T15–T16 (roster `_rerun2/usage-roster-T15-T16.json`, written at spawn time)
 - `compute-s3-cost.mjs` over all runs
 - `reviews/BATCH-T12-T16.md`
 
-Agent ids for the T12–T14 invocations are **not recoverable from disk** — the usage roster for this batch must be rebuilt from the subagent transcript directory (`~/.claude/projects/*/*/subagents/agent-*.jsonl`) by matching timestamps to the debate round boundaries in each arm's `debate/debate.json`. Budget time for that. From T15 onward, **record each agent id in the roster as the subagent is spawned** rather than reconstructing later.
+**T12–T14 usage roster: reconstructed and closed (2026-08-11).** `_rerun2/usage-roster-T12-T14.json` + `_rerun2/claude-usage-T12-T14.json`, **31 invocations, 31 captured, 0 missing.** Agent ids were recovered from the subagent transcript directory by bracketing each transcript's first/last message timestamp against the round boundaries visible in the arm log-file mtimes. The reconstruction is exhaustive, not best-effort: that session holds 69 transcripts, 38 of which the T07–T11 roster already claims, and the remaining 31 are exactly 5 constructors + 1 contamination auditor + 25 debate participants, with nothing left over and nothing claimed twice. Constructors were told apart by the mtime of the `CONSTRUCTION-RECORD.md` each wrote, ~20 s before its final message in all five cases. Only ids and timestamps were read.
+
+From T15 onward, **each agent id is recorded in the roster as the subagent is spawned** rather than reconstructed later.
 
 ---
 
@@ -159,6 +164,7 @@ Order is flexible but **all must complete before grading** (amended Sequencing, 
 - **zsh does not word-split unquoted parameter expansions.** Routing a probe's argument list through a single variable collapses it into one argv entry, which silently turns crash probes into false negatives — every probe reports survival. **Three seats hit this** (T14 Arm A rounds 1 and 2, and it is now a standing brief warning). Two had to invalidate and regenerate archives they had already written. Brief reviewers to pass arguments literally or use an array.
 - **A reopening is not mechanically required to carry new evidence.** The runner's transition table expects `reject`/`partial` on your own contested finding to come with new checkable evidence, but T14 Arm B's critic reopened the same finding in rounds 2 **and** 3 citing only the defender's own prior outputs. Both times the defender produced fresh evidence rather than arguing from the record. Worth reporting as a gap between the documented expectation and what is enforced; do not assume a reopening means new evidence exists.
 - **Fidelity variables are reviewer-dependent, and severity disputes can outlast mechanism agreement.** T14 closed with `partially-accepted` findings in **both** arms — the first task where disputes survived to close. Mechanism was agreed throughout in both; what persisted was impact and severity. Deciding evidence is recorded in every case.
+- **Orchestrator read T14's sealed staging manifest (2026-08-11).** While reconstructing `armlib.sh` after a context restart, the orchestrator dumped the key/value structure of `_rerun2/_sealed/T14-STAGING.json` to work out how to write the tree-integrity check. That file is on the orchestrator's own do-not-read list (§4), and the dump disclosed T14's `sourcePath`. **Assessment: non-contaminating in effect but a real breach of the rule.** T14 was closed in both arms before the read, so no live debate could be influenced; a source path locates the reviewed slice, which reviewers see anyway, and does not disclose the defect; and the orchestrator does not grade. **Remedy:** `arm_clean_check` was written to compare the arm repo's diff against the *staged* repo's diff by hash and file count only, so it never opens a sealed manifest and never prints a path. No sealed manifest has been opened for T15 or later.
 - **The runner's validation has now stopped two malformed messages at the boundary** — T03's stale-round refusal (previous batch) and T13 Arm A's duplicate id. In both cases no invalid state entered the ledger and the phase was unchanged, so the debate resumed cleanly after correction. Worth reporting as evidence the neutral-runner design earns its cost.
 
 ---
