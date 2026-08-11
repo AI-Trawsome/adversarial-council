@@ -115,22 +115,62 @@ section("5. unexpected properties");
 
 section("6. invalid nested response fields");
 {
-  const base = validMessage(2);
+  // A response that is valid under the schema, so that each case below isolates
+  // exactly one defect. Getting this fixture right matters: an earlier draft
+  // used `id` instead of `finding_id`, which made every case fail for two
+  // reasons at once and let the assertions pass without testing what they claim.
+  const validResponse = () => ({
+    finding_id: "R1-F1",
+    verdict: "accept",
+    reason: "The cited guard is present and the path is unreachable.",
+    evidence: "src/example.js:10-14",
+    contest_support_level: null,
+    proposed_fix: null,
+    deciding_evidence: null
+  });
+  const base = () => ({ ...validMessage(2), findings: [], responses: [validResponse()] });
+
   {
-    const m = clone(base);
-    m.findings = [];
-    m.responses = [{ id: "R1-F1", verdict: "not-a-verdict", reason: "because", evidence: "src/a.js:1" }];
-    const r = validateCritique(m, { round: 2 });
-    ok("an out-of-enum response verdict is rejected", !r.valid);
-    ok("categorized as value-not-in-enum", (r.categories["value-not-in-enum"] ?? 0) >= 1, JSON.stringify(r.categories));
+    const r = validateCritique(base(), { round: 2 });
+    ok("the response fixture is itself valid", r.valid, r.errors.join("; "));
   }
   {
-    const m = clone(base);
-    m.findings = [];
-    m.responses = [{ id: "R1-F1", verdict: "accept", reason: 12345, evidence: "src/a.js:1" }];
+    const m = base();
+    m.responses[0].verdict = "not-a-verdict";
+    const r = validateCritique(m, { round: 2 });
+    ok("an out-of-enum response verdict is rejected", !r.valid);
+    ok("that is the ONLY error", r.errors.length === 1, r.errors.join("; "));
+    ok("categorized as value-not-in-enum", r.categories["value-not-in-enum"] === 1, JSON.stringify(r.categories));
+  }
+  {
+    const m = base();
+    m.responses[0].reason = 12345;
     const r = validateCritique(m, { round: 2 });
     ok("a wrong-typed response field is rejected", !r.valid);
-    ok("the error names the nested response path", r.errors.some((e) => e.includes("/responses/0/")), r.errors.join("; "));
+    ok("that is the ONLY error", r.errors.length === 1, r.errors.join("; "));
+    ok("the error names the nested response path", r.errors[0].includes("/responses/0/reason"), r.errors[0]);
+  }
+  {
+    const m = base();
+    delete m.responses[0].finding_id;
+    const r = validateCritique(m, { round: 2 });
+    ok("a response missing finding_id is rejected", !r.valid);
+    ok("categorized as missing-required", r.categories["missing-required"] === 1, JSON.stringify(r.categories));
+    ok("the missing key is named", r.errors[0].includes("finding_id"), r.errors[0]);
+  }
+  {
+    const m = base();
+    m.responses[0].id = "R1-F1"; // the wrong key name for this object
+    const r = validateCritique(m, { round: 2 });
+    ok("an undeclared response property is rejected", !r.valid);
+    ok("categorized as undeclared-property", r.categories["undeclared-property"] === 1, JSON.stringify(r.categories));
+  }
+  {
+    const m = base();
+    m.responses[0].contest_support_level = "very-strong";
+    const r = validateCritique(m, { round: 2 });
+    ok("an out-of-enum contest_support_level is rejected", !r.valid);
+    ok("categorized as value-not-in-enum", (r.categories["value-not-in-enum"] ?? 0) >= 1, JSON.stringify(r.categories));
   }
 }
 
