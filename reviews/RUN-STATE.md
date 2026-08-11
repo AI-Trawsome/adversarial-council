@@ -2,56 +2,32 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-11, **T15 in flight (Arm A, round 1)**. See §0.
+**Last updated:** 2026-08-11, after **T16 closed (both arms)** and the T12–T16 batch record was written. **STOPPED CLEANLY AT A BATCH BOUNDARY — see §0 to resume.**
 
 ---
 
 ## 0. RESUME HERE
 
-**T15 is closed in both arms. T16 is next, B-first** per the pre-recorded schedule. T16 is already constructed, scrubbed, staged and audited — no construction work is needed. Begin at step 8 of §3:
+**Nothing is mid-flight; no debate is open; no subagent is running. T01–T16 are closed, both arms. The T12–T16 batch is fully closed out** — usage collected (31/31 and 11/11 captured, 0 missing), S3 computed, `reviews/BATCH-T12-T16.md` written and committed.
 
-```
-source <scratchpad>/armlib.sh      # recreate from §3.1 if the scratchpad is gone
-arm_init T16 B
-arm_critique_B T16 1               # live Codex critic; stdout never read
-# then spawn the Arm B defender subagent (Python/redis-py brief; see §7)
-```
+**The single next action:** begin the **T17–T20r construction batch**. Nine tasks remain: **T17, T18, T21, T22, T23, T24, T25, T19r, T20r**. None is constructed yet. Follow §3 steps 1–7 for all nine (verify SHA → construct → contamination audit → scrub → audit scrub → stage → audit staging), then run them in schedule order per §3.2.
 
-To pick up mid-task at any point, run `arm_cp <task> <arm>` and read `phase`:
+Source clones are all present: `T01`(aiohttp), `_src-redis-py`, `_src-undici`, `_src-bullmq`, `_src-ioredis`, `_src-celery`, `_src-fastify`, and newly cloned `_src-pino` (T19r), `_src-sqlalchemy` (T20r), `_src-fastapi` (T23). **No clone work is owed.**
+
+Seats for T17+ are **not yet minted** — add them to `_seatmap/SEAT-MAP.json` as opaque `_scratch/s<12-hex>` names, one per (task, arm, role) plus one per constructor, and verify each is empty before use (Q-001 condition 7).
+
+To pick up mid-task at any point, run `arm_cp <task> <arm>` (recreate `armlib.sh` from §3.1 first if the scratchpad is gone) and read `phase`:
 
 | phase | what is owed |
 |---|---|
-| `awaiting-critique` | Arm A: `arm_prompt_A` → spawn critic → `arm_inject_A`. Arm B: `arm_critique_B` |
+| `awaiting-critique` | Arm A: `arm_prompt_A` → spawn critic → it writes `critique-mock-r<N>.json` → `arm_inject_A`. Arm B: `arm_critique_B` |
 | `awaiting-rebuttal` | spawn the defender subagent → it writes `rebuttal-r<N>.json` → `arm_rebut` |
 | `ready-to-close` | `arm_close`, then `arm_clean_check` |
-| `closed` | init the second arm; then `arm_context_match` must print `CONTEXT MATCH` |
+| `closed` | init the second arm; once both exist, `arm_context_match` must print `CONTEXT MATCH` |
 
-**The first T15 Arm A attempt is VOIDED** — see `_rerun2/T15-armA-VOIDED-SCHEMA-ASYMMETRY/` and amendment **A-004** (consult 007, `reviews/CHATGPT-RULING-021-*`). Arm B's critic is schema-enforced by the provider; Arm A's was not, so an `evidence` field encoded as an array was silently rewritten to `unsupported` and excluded from the verdict. Fixed in the harness — `bench/inject-armA.mjs` now validates against the frozen schema before the runner is invoked, with exactly one correction then abort, mirroring Arm B. **The plugin is untouched and still pinned at `f976990`.** Retrospective audit: 29 of 29 archived Arm A payloads across T01–T14 are schema-valid, so no earlier task is affected.
+**After the nine tasks, in order:** the three ordered remediation items in §5 (Q-001 T01–T06 re-run, Q-001 condition 12 audit of T07–T11, Q-002 condition 8 dependency screen) → final S3 → `reviews/READY-TO-GRADE.md`. **Do not begin grading.**
 
-To pick up mid-task, run `arm_cp T15 A` (recreate `armlib.sh` from §3.1 first if the scratchpad is gone) and read `phase`:
-
-| phase | what is owed |
-|---|---|
-| `awaiting-critique` | `arm_prompt_A T15 <round>` → spawn the Arm A critic subagent → it writes `critique-mock-r<N>.json` → `arm_inject_A T15 <N>` |
-| `awaiting-rebuttal` | spawn the defender subagent → it writes `rebuttal-r<N>.json` → `arm_rebut T15 A <N>` |
-| `ready-to-close` | `arm_close T15 A`, then `arm_clean_check T15 A` |
-| `closed` | `arm_init T15 B` and run Arm B (Codex critic via `arm_critique_B`) |
-
-Then `arm_context_match T15` once both arms exist — it must print `CONTEXT MATCH`.
-
-Seats for T15/T16 are in `_seatmap/SEAT-MAP.json`. All four T15 seats were verified empty before Arm A started (Q-001 condition 7).
-
-**After T15, in order:** T16 (B-first) → then the batch-level work below → then T17, T18, T21–T25, T19r, T20r → then the three ordered remediation items in §5.
-
-**Owed at the end of the T12–T16 batch:**
-- ~~usage roster covering every T12–T14 invocation~~ — **done**, see below
-- `collect-claude-usage.mjs` for T15–T16 (roster `_rerun2/usage-roster-T15-T16.json`, written at spawn time)
-- `compute-s3-cost.mjs` over all runs
-- `reviews/BATCH-T12-T16.md`
-
-**T12–T14 usage roster: reconstructed and closed (2026-08-11).** `_rerun2/usage-roster-T12-T14.json` + `_rerun2/claude-usage-T12-T14.json`, **31 invocations, 31 captured, 0 missing.** Agent ids were recovered from the subagent transcript directory by bracketing each transcript's first/last message timestamp against the round boundaries visible in the arm log-file mtimes. The reconstruction is exhaustive, not best-effort: that session holds 69 transcripts, 38 of which the T07–T11 roster already claims, and the remaining 31 are exactly 5 constructors + 1 contamination auditor + 25 debate participants, with nothing left over and nothing claimed twice. Constructors were told apart by the mtime of the `CONSTRUCTION-RECORD.md` each wrote, ~20 s before its final message in all five cases. Only ids and timestamps were read.
-
-From T15 onward, **each agent id is recorded in the roster as the subagent is spawned** rather than reconstructed later.
+**Record each agent id in the batch roster as the subagent is spawned** (`_rerun2/usage-roster-T17-*.json`), rather than reconstructing later. The T12–T14 roster had to be rebuilt from transcript timestamps; it worked and is exhaustive, but it cost time that recording at spawn does not.
 
 ---
 
@@ -78,7 +54,7 @@ The operator has authorized running to completion without check-ins, and authori
 | T13 | **closed** | B: 3 rounds, 5 findings (codex 2, claude 3), all accepted, 2 high/3 med, NO-SHIP. A: 3 rounds, 6 findings (codex 4, claude 2), all accepted, 1 high/4 med/1 low, NO-SHIP. 0 flags both arms |
 | T14 | **closed** | A: 3 rounds, 4 findings (codex 3, claude 1), 2 accepted + 2 partially-accepted, 2 crit/2 high, NO-SHIP. B: 3 rounds, 4 findings (codex 2, claude 2), 3 accepted + 1 partially-accepted, 3 high/1 med, NO-SHIP. 0 flags both arms |
 | T15 | **closed** | First Arm A attempt VOIDED under A-004 (schema asymmetry); restarted with fresh seats. A: 1 round, 3 findings (codex 3), all accepted, 1 high/1 med/1 low, NO-SHIP. B: 1 round, 1 finding (codex 1), accepted, 1 high, NO-SHIP. 0 flags both arms; both trees intact |
-| T16 | **B closed, A in flight** | B: 1 round, 3 findings (codex 3), all accepted, 1 high/2 med, NO-SHIP, 0 flags, tree intact. A: debate `dbt-2026-08-11-75c222`, round-1 critic running. `context.md` both arms `bdcadb48549621c45bbd1235687043abd420159574500558619366828e10ec93` |
+| T16 | **closed** | B: 1 round, 3 findings (codex 3), all accepted, 1 high/2 med, NO-SHIP. A: 3 rounds, 5 findings (codex 5), all accepted, 3 high/2 med, NO-SHIP. 0 flags both arms; both trees intact |
 | T17, T18, T21–T25, T19r, T20r | not started | 9 tasks remaining |
 
 ### T12–T16 construction (done, audited, staged)
@@ -103,7 +79,8 @@ T11 `f2af7b684478a483d9b94390b61ba0ca3c215cdecba72f2344a901213771dd0b` ·
 T12 `5c855ad17c130e10ff7492f8bf39a890b0b7810f7d047ca26e3419dded072fea` ·
 T13 `b9083bd17d82d418114f9a54693b8e293beaa59856a4c6a343538906b48e9cc4` ·
 T14 `8ca3e62e0f683d8f9c210c441a690339b25845bc3232c7b68735b211fc0959ae` ·
-T15 `d71aa61375ec4adbb7ee23d0819de4227f1ec57ba905e62cc58d4d753b43d990`
+T15 `d71aa61375ec4adbb7ee23d0819de4227f1ec57ba905e62cc58d4d753b43d990` ·
+T16 `bdcadb48549621c45bbd1235687043abd420159574500558619366828e10ec93`
 
 ---
 
@@ -188,6 +165,7 @@ Order is flexible but **all must complete before grading** (amended Sequencing, 
 - **Fidelity variables are reviewer-dependent, and severity disputes can outlast mechanism agreement.** T14 closed with `partially-accepted` findings in **both** arms — the first task where disputes survived to close. Mechanism was agreed throughout in both; what persisted was impact and severity. Deciding evidence is recorded in every case.
 - **The per-arm log directory is also a shared read surface**, disclosed by T16 Arm A's round-2 defender, which read one runner-produced artifact there that was not on its prescribed reading list. **Non-contaminating.** Everything in `_rerun2/T<NN>-arm{A,B}/` is derived from the debate itself — prompts, the two sides' messages, runner output, the debate id — and both seats already receive all of it through the ledger and `context.md`. **No ground truth lives there:** the sidecar, construction record, ranges file and sealed staging manifest are all in other directories. Like `repro/`, it is per-arm, so the channel is symmetric and A-vs-B is unaffected. Same disposition: recorded, layout left stable for the rest of the run.
 - **The per-arm `repro/` archive is shared between that arm's critic and defender** — disclosed by T15 Arm A's round-1 defender, which listed its own output directory there and saw the critic's filenames. **Non-contaminating, and it does not bias A against B.** The two seats are the same task, the same arm and the same round; the defender already holds the critic's full claims and evidence through the ledger, which quotes those paths anyway, so filenames carry nothing the ledger does not. The defender rebuilt every experiment from prose and opened none of the scripts. Most importantly the channel is **symmetric across arms** — `_rerun2/T<NN>-arm{A,B}/repro/` are separate directories, and `arm_init` wipes the arm's log directory, so there is no cross-arm and no cross-task path. Left as-is for the rest of the run rather than re-scoped per seat: changing reviewer environment mid-run would introduce an inconsistency with T01–T14 for no contamination gain. Worth fixing in a future revision by giving each seat its own subdirectory.
+- **The orchestrator hit the zsh word-splitting hazard it had been briefing reviewers about (2026-08-11).** Verifying that the `--overhead` addition left S3 untouched, it routed the command through a shell variable (`$S3`), which zsh delivered as a single argv entry; both captured files were empty and the diff **passed vacuously**. Caught by checking byte counts, then redone with the command written literally — S3 output confirmed byte-identical. Same failure mode that turned three reviewer crash probes into false negatives on T14. **Knowing about a hazard is not immunity to it.** General lesson worth carrying: a comparison that can pass on empty input needs a non-emptiness assertion, not just a diff.
 - **Orchestrator read T14's sealed staging manifest (2026-08-11).** While reconstructing `armlib.sh` after a context restart, the orchestrator dumped the key/value structure of `_rerun2/_sealed/T14-STAGING.json` to work out how to write the tree-integrity check. That file is on the orchestrator's own do-not-read list (§4), and the dump disclosed T14's `sourcePath`. **Assessment: non-contaminating in effect but a real breach of the rule.** T14 was closed in both arms before the read, so no live debate could be influenced; a source path locates the reviewed slice, which reviewers see anyway, and does not disclose the defect; and the orchestrator does not grade. **Remedy:** `arm_clean_check` was written to compare the arm repo's diff against the *staged* repo's diff by hash and file count only, so it never opens a sealed manifest and never prints a path. No sealed manifest has been opened for T15 or later.
 - **The runner's validation has now stopped three malformed messages at the boundary** — T03's stale-round refusal (previous batch), T13 Arm A's duplicate id, and T15 Arm A round 1, where the critic wrote `confidence` as the string `"high"` on all three findings instead of a number in [0,1] (it also carried three out-of-contract keys, which the validator does not police). In every case no invalid state entered the ledger and the phase was unchanged, so the debate resumed cleanly after correction. Worth reporting as evidence the neutral-runner design earns its cost. **Corrections are sent back to the same seat** — the orchestrator must never edit a reviewer's message itself, even for a purely mechanical field, and the correction instruction must say plainly that no claim, evidence, severity or support level may change.
 - **Brief the output contract's field types, not just its shape.** The T15 stumble was a reviewer encoding a confidence *level* where the schema wants a probability. Reviewer briefs should state that `confidence` is a number in [0,1] and that findings carry no keys beyond those the contract names.

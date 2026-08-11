@@ -50,7 +50,14 @@ const per = (tokens, rate) => (tokens * rate) / 1e6;
 
 const claude = new Map(); // `${task}|${arm}` -> token classes
 function addClaude(task, arm, u) {
-  if (arm === "construction" || arm === "contamination-audit") return; // shared overhead
+  // Shared overhead and voided runs are kept OUT of the scoring map, but they
+  // are not thrown away: --overhead reports them separately, because Q-001
+  // condition 11 requires voided-run usage to be excluded from S3 and reported
+  // as benchmark remediation overhead rather than silently dropped. Arms named
+  // anything other than "A" or "B" never reach the per-task table below, which
+  // pairs strictly on `${task}|A` and `${task}|B`.
+  if (arm === "construction" || arm === "contamination-audit") { addOverhead(task, arm, u); return; }
+  if (arm !== "A" && arm !== "B") { addOverhead(task, arm, u); return; }
   const key = `${task}|${arm}`;
   const b = claude.get(key) ?? { fresh: 0, out: 0, cr: 0, cw5m: 0, cw1h: 0 };
   b.fresh += u.input_tokens ?? 0;
@@ -65,6 +72,25 @@ function addClaude(task, arm, u) {
     b.cw1h += u.cache_creation_input_tokens ?? 0;
   }
   claude.set(key, b);
+}
+
+// Non-scoring usage: shared construction/audit overhead, and runs voided by an
+// amendment. Same token classes, same rate math — only the reporting differs.
+const overhead = new Map(); // `${task}|${arm}` -> token classes
+function addOverhead(task, arm, u) {
+  const key = `${task}|${arm}`;
+  const b = overhead.get(key) ?? { fresh: 0, out: 0, cr: 0, cw5m: 0, cw1h: 0 };
+  b.fresh += u.input_tokens ?? 0;
+  b.out += u.output_tokens ?? 0;
+  b.cr += u.cache_read_input_tokens ?? 0;
+  const split = u.cache_creation;
+  if (split && typeof split === "object") {
+    b.cw5m += split.ephemeral_5m_input_tokens ?? 0;
+    b.cw1h += split.ephemeral_1h_input_tokens ?? 0;
+  } else {
+    b.cw1h += u.cache_creation_input_tokens ?? 0;
+  }
+  overhead.set(key, b);
 }
 
 /**
@@ -179,6 +205,34 @@ const result = {
   s3Passes: median <= 3.0,
   subscriptionMarginalCostArmBCodex: 0
 };
+
+// Non-scoring usage, reported so it is disclosed rather than dropped.
+const overheadRows = [...overhead.entries()]
+  .map(([key, b]) => {
+    const [task, arm] = key.split("|");
+    return { task, arm, dollars: +claudeDollars(b).toFixed(4) };
+  })
+  .sort((x, y) => (x.task === y.task ? x.arm.localeCompare(y.arm) : x.task.localeCompare(y.task)));
+result.nonScoringUsage = {
+  note:
+    "Excluded from S3 by construction: shared construction/contamination-audit overhead, " +
+    "and runs voided by amendment (Q-001 condition 11; A-004). Modeled on the same rate card.",
+  rows: overheadRows,
+  totalDollars: +overheadRows.reduce((s, r) => s + r.dollars, 0).toFixed(4),
+  voidedDollars: +overheadRows.filter((r) => r.arm.startsWith("voided")).reduce((s, r) => s + r.dollars, 0).toFixed(4)
+};
+
+if (process.argv.includes("--overhead")) {
+  console.log("Non-scoring usage — EXCLUDED from S3, modeled on rate card v" + card.rateCardVersion);
+  console.log("(shared construction/audit overhead, and runs voided by amendment)\n");
+  console.log("task      arm                    $");
+  for (const r of overheadRows) {
+    console.log(`${r.task.padEnd(9)} ${r.arm.padEnd(22)} ${r.dollars.toFixed(2).padStart(7)}`);
+  }
+  console.log(`\ntotal non-scoring $${result.nonScoringUsage.totalDollars.toFixed(2)}` +
+    `   of which voided runs $${result.nonScoringUsage.voidedDollars.toFixed(2)}`);
+  process.exit(0);
+}
 
 if (emitJson) {
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
