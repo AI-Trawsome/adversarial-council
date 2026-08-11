@@ -8,7 +8,9 @@
 
 ## 0. RESUME HERE
 
-**T15 is running. Arm A first, per the pre-recorded schedule.** Debate `dbt-2026-08-11-3ba347`, repo `_rerun2/T15-armA-repo`, logs `_rerun2/T15-armA`.
+**T15 is running, restarted from the beginning under A-004.** Arm A first, per the pre-recorded schedule. Debate `dbt-2026-08-11-d9fc11`, repo `_rerun2/T15-armA-repo`, logs `_rerun2/T15-armA`, fresh seats `T15-A-critic` / `T15-A-def` in `SEAT-MAP.json`.
+
+**The first T15 Arm A attempt is VOIDED** — see `_rerun2/T15-armA-VOIDED-SCHEMA-ASYMMETRY/` and amendment **A-004** (consult 007, `reviews/CHATGPT-RULING-021-*`). Arm B's critic is schema-enforced by the provider; Arm A's was not, so an `evidence` field encoded as an array was silently rewritten to `unsupported` and excluded from the verdict. Fixed in the harness — `bench/inject-armA.mjs` now validates against the frozen schema before the runner is invoked, with exactly one correction then abort, mirroring Arm B. **The plugin is untouched and still pinned at `f976990`.** Retrospective audit: 29 of 29 archived Arm A payloads across T01–T14 are schema-valid, so no earlier task is affected.
 
 To pick up mid-task, run `arm_cp T15 A` (recreate `armlib.sh` from §3.1 first if the scratchpad is gone) and read `phase`:
 
@@ -110,7 +112,7 @@ Helper functions live in the session scratchpad as `armlib.sh` (**not committed*
 - `arm_context_match <task>` — asserts both arms' `context.md` hash identically.
 - `arm_critique_B <task> <round>` — Codex critic; stdout redirected to a file and **never read**.
 - `arm_prompt_A <task> <round>` — builds the Arm A critic prompt via `bench/armA-prompt.mjs --template _prompts/critique-armA.md`.
-- `arm_inject_A <task> <round>` — `COUNCIL_MOCK_CRITIQUE=<logs>/critique-mock-r<N>.json node council-runner.mjs critique`.
+- `arm_inject_A <task> <round>` — **schema-gated** via `bench/inject-armA.mjs` (A-004). Exit 0 injected; exit 1 invalid, one correction permitted, bounce the error list back to the same critic seat; exit 3 second invalid submission, critic step aborts. Validation precedes the runner call, so an invalid message cannot mutate the ledger. Rejected payloads and error reports are archived to `_rerun2/_rejected/<arm>/`, outside any directory reviewers read.
 - `arm_rebut <task> <arm> <round>` · `arm_close <task> <arm>` · `arm_clean_check <task> <arm>`.
 
 ### 3.2 Arm order (pre-recorded, `bench-schedule.json` — never deviate)
@@ -127,7 +129,9 @@ A-first: T03, T04, T06, T08, T11, T12, T14, T15, T17, T25
 - Codex CLI `0.147.0`; Anthropic `claude-opus-5`; OpenAI `gpt-5.6-sol`.
 - Both arms' `context.md` **must hash identically**; framing `focusSha256` must equal `63a64714bdf75511421b8870dfdbf83e541b28391ad7ca92db938ef6c47a22df`.
 - Arm A template `_prompts/critique-armA.md` differs from `prompts/critique.md` by exactly two role-reference lines.
-- Round cap 3; no env overrides except `COUNCIL_MOCK_CRITIQUE` for Arm A.
+- Round cap 3; no env overrides except `COUNCIL_MOCK_CRITIQUE` for Arm A, and that file is now **schema-gated** — never set it by hand, always go through `arm_inject_A` → `bench/inject-armA.mjs`.
+- **A-004 harness freeze (verify before each task):** `bench/validate-critique.mjs` `8d196a4715f0f1b913f5ead3fd1e06bd08fda10cb6b298c40d0664ce7c07aa36`, `bench/inject-armA.mjs` `9006f6de740397ef5c470ae99e4a180238667d4245c8bbe5ed5681bb74457b5f`, `bench/test/harness-schema-tests.mjs` `f737e464cfcea0e6ca25c616d1ef29532282af9d30717400b4087af4669e915d`, schema `6e78ea61a2ddad2d43c70c5f12d05cf9f3043726676d4716de4b3e7f294fafd3`. Harness suite **59 passed, 0 failed**; plugin suite still **46 passed, 0 failed**.
+- Arm A critic gets **exactly one** format correction, sent back to the same seat, format-only — never a comment on finding quality, evidence strength, severity, or correctness. A second invalid message aborts the critic step.
 - Debates run **strictly sequentially** — never two at once (wall-clock is a recorded metric).
 - Orchestrator reads **control-plane only**: never finding text, never a verdict body, never the sidecar or construction record, never a staged repo's source.
 
@@ -181,6 +185,7 @@ Order is flexible but **all must complete before grading** (amended Sequencing, 
 - Node projects: `npm install` inside the checkout is forbidden; install to scratch + `NODE_PATH`, or use a scratch copy — **state which**, and print `require.resolve` at runtime.
 - Final message: control-plane only, **no repository path, file name, directory name, or symbol name**, and an explicit statement about foreign scratch directories.
 - Final-round briefs: warn that a new finding cannot be adjudicated and closes as unresolved risk; require deciding evidence for anything closing disputed.
+- **State the output contract's field TYPES, not just its shape** (added after A-004). Spell out that `evidence` is a single **string** — several pieces go into one string, not a list; that `confidence` is a **number in [0,1]**, not `"high"` and not `90`; that findings carry no key beyond the contract, so no `title`, `impact` or `suggested_fix`; and that the critic gets one correction before the step aborts. Tell them to parse their own file back and inspect the types before finishing.
 
 ---
 
