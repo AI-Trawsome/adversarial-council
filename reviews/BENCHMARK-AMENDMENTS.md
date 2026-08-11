@@ -27,6 +27,7 @@ Both amendments were submitted for external ruling before adoption and approved.
 | R-001 | Subagent isolation sufficiency; T01 dataset treatment | approved, ruling only — amends no rule | consult 001 §3 |
 | Q-001 | Shared reviewer scratch directory; T01–T06 treatment | **ruled 2026-08-09 — re-run both arms of T01–T06 (Option 2b)** | consult 006 |
 | Q-002 | T10/T11 share a source path; aggregate treatment | **ruled 2026-08-09 — 25-task primary + T11-dropped sensitivity (Option C)** | consult 006 |
+| A-004 | Arm A critic messages are schema-enforced in the harness | approved, implemented 2026-08-11 | consult 007 |
 
 Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07. ☑ A-002-E1 — approved 2026-08-08. ☐ Q-001 ☐ Q-002 — ruled 2026-08-09, approval pending.
 
@@ -231,6 +232,45 @@ A 19-task sensitivity analysis may still be reported as a diagnostic, but it is 
 10. If further dependent components are found, **pause grading** and submit one uniform component-level sensitivity rule for review. Do not improvise pair-by-pair handling once outcomes are visible.
 
 **Status:** conditions 1–7 bind at grading time. Condition 8's screen is scheduled before grading and is a superset of the T07–T11 same-path check already performed.
+
+---
+
+## A-004 — Arm A's critic message is validated against the frozen schema
+
+**Rule affected:** §1's arm definitions — specifically the requirement that the arms differ by critic identity and nothing else — and therefore §4 criterion **S1**.
+
+**Fourth authorization:** consult exchange 007, 2026-08-11T19:38Z. Committed verbatim at `reviews/CHATGPT-RULING-021-armA-schema-asymmetry.md`, `sha256 f01247ceb015deb39f72428e49ffb9bee7d7013d4162e1398e136dc2ee3b87aa` — byte-identical to the runtime log the plugin wrote at `.council/consult/007-2026-08-11T19-38-58-914Z.md`, which is gitignored runtime output. The submission is `reviews/CLAUDE-QUERY-020-armA-schema-asymmetry.md`, `sha256 bb443e3f206005245f8c103d4f410fe769bbd509309cbc258ac0e83b7b663a10`.
+
+**The defect.** The arms differed in whether the critic's *output* was schema-enforced. Arm B's Codex critic is called with `outputSchema: readOutputSchema(SCHEMA_PATH)`, so the provider enforces `council-message.schema.json` at generation time, and a reply that still fails to parse earns one retry nudge on the same thread. Arm A's Claude critic delivers its message through `COUNCIL_MOCK_CRITIQUE`, and the runner does exactly `message = readJson(process.env.COUNCIL_MOCK_CRITIQUE)` — **the schema is never applied.** The runner's `validateMessage()` is a hand-rolled check of protocol *legality*, not of the schema: it range-checks `confidence` but never type-checks `evidence`.
+
+**Why that is not a cosmetic difference.** The anti-inflation rule reads `if (!looksCheckableEvidence(finding.evidence)) finding.support_level = "unsupported"`, and `looksCheckableEvidence` returns `false` for any non-string before examining a single character. Unsupported findings are excluded from the verdict by `stepClose`. So an Arm A critic that cited real file:line evidence, encoded as a JSON array rather than one string, had every such finding silently deleted from its verdict — with no error, no warning, and a runner report saying the round was accepted with N new findings. The penalty lands directly on **S1, ground-truth detection**, in one arm only. It measures which arm had a schema attached, not critic quality.
+
+**How it surfaced.** T15 Arm A round 1. The critic made two errors of the same kind: `confidence` as the string `"high"`, and `evidence` as an array of strings. The first bounced, because someone had hand-written a check for that specific field; nothing entered the ledger, the phase was unchanged, and the critic corrected it in its own seat. The second did not bounce. That asymmetry between two identical mistakes is the defect in miniature — the mock path was validated by an ad-hoc subset of the schema instead of by the schema.
+
+**Resolution (Option 1, approved).** Validate every Arm A critic message against the same frozen `council-message.schema.json` before it is handed to the runner, in the **benchmark harness** rather than in the plugin. `COUNCIL_MOCK_CRITIQUE` is a benchmark affordance, not a product feature; its missing enforcement is a defect in how Arm A's message is delivered, not in the council plugin. Fixing it here **leaves the plugin pinned at `f976990`**, so T15–T25 run against the same code under test as T01–T14. The ruling agreed, and recorded the product-level gap as a post-run engineering item instead.
+
+**Binding conditions, all ten, and how each is met:**
+
+1. *Pin and record the schema's sha256; both arms use the same version.* — `plugins/council/schemas/council-message.schema.json`, `sha256 6e78ea61a2ddad2d43c70c5f12d05cf9f3043726676d4716de4b3e7f294fafd3`. The validator loads that exact file, and a test asserts the loaded schema still declares `evidence` a string, `confidence` a number, and `additionalProperties: false`.
+2. *Use a standards-compliant JSON Schema validator; do not reproduce the schema with another hand-written subset.* — Ajv 8.20.0, vendored under `bench/vendor/`. Writing a second hand-rolled checker is what caused the defect; the fix must not repeat it.
+3. *Validate before ledger ingestion or anti-inflation rewriting.* — `bench/inject-armA.mjs` validates before the runner process is spawned at all. A test writes a sentinel ledger and asserts it is byte-identical after both an invalid attempt and an abort.
+4. *Retain `validateMessage()` for protocol/state legality; run both layers and report their errors together.* — the runner's checks are untouched. The harness additionally re-checks round, side, claimant and id format so the critic sees **every** reason its message would be refused in one report, rather than discovering the second only after fixing the first.
+5. *Protocol tests for nine named cases.* — `bench/test/harness-schema-tests.mjs`, **59 assertions, 0 failures**, covering array-valued `evidence`, string-valued `confidence`, each missing required field, undeclared properties, invalid nested response fields, valid messages passing unmutated, one successful correction, a second invalid submission aborting, and no ledger mutation before successful validation. These live in `bench/` on purpose: adding them to the plugin's own suite would move the pin.
+6. *Archive the invalid payload, errors, corrected payload, attempt count and usage outside reviewer-visible paths.* — written to `_rerun2/_rejected/<arm>/`, never into the arm log directory, which reviewers do read. A test asserts no rejected artifact appears in the log directory.
+7. *Neither critic nor defender in the paired arm may access rejected messages or validation artifacts.* — same mechanism; the rejected directory is named in no brief.
+8. *Freeze the corrected harness and its hash before restarting T15.* — `bench/validate-critique.mjs` `sha256 8d196a4715f0f1b913f5ead3fd1e06bd08fda10cb6b298c40d0664ce7c07aa36`; `bench/inject-armA.mjs` `sha256 9006f6de740397ef5c470ae99e4a180238667d4245c8bbe5ed5681bb74457b5f`; `bench/test/harness-schema-tests.mjs` `sha256 f737e464cfcea0e6ca25c616d1ef29532282af9d30717400b4087af4669e915d`. Frozen before T15 was restarted.
+9. *Record as a §5 implementation repair discovered before grading, with the retrospective audit and the T15 disposition.* — this entry.
+10. *Do not change defender enforcement mid-run.* — unchanged. Defenders are Claude in both arms and equally unenforced, so that gap is symmetric and cannot bias A against B. It is a post-run item.
+
+**Contamination safety of the error reports.** Validation errors emit JSON Pointer paths, expected types, and error keywords only — **instance values are never printed**. A test feeds a sentinel string into four different fields and asserts it appears in no error string. So a validation failure cannot teach the orchestrator, or a log reader, anything about finding content.
+
+**Retry budget.** Exactly one correction, mirroring Arm B's single malformed-output retry. A second invalid submission aborts the critic step under the same policy Arm B faces when its retry is exhausted. An unlimited bounce-and-correct loop was rejected as an advantage to Arm A that would also distort cost and convergence. The correction attempt's usage stays inside the same seat's transcript and is therefore counted in that arm's scoring cost, exactly as Arm B's billed retry would be.
+
+**Retrospective audit (condition 3 of the ruling's §3).** Zero `unsupported` findings was held to be necessary but not sufficient, so every archived Arm A critic payload was validated against the schema now enforced. The audited files are `critique-mock-r<N>.json` — the exact bytes `COUNCIL_MOCK_CRITIQUE` pointed at, i.e. pre-ingestion critic output, not a ledger-normalized representation.
+
+**Result: 29 of 29 payloads across T01–T14 are schema-valid**, including the three rounds of the voided pre-isolation T07 Arm A run. Only T15 Arm A round 1 fails, with 3 `wrong-type` errors. **No re-run of T01–T14 is required on this ground.** The audit table carries task, round, validity and error-category counts only.
+
+**T15's disposition.** Re-injecting a corrected message from the existing seat was **rejected**: the seat had completed its search, had learned that two encodings crossed different validation boundaries, and would have been receiving a remediation opportunity designed after its output was observed — and "encoding only" would require a semantic-equivalence judgment that was never pre-registered. T15 Arm A is voided and preserved at `_rerun2/T15-armA-VOIDED-SCHEMA-ASYMMETRY/`, including both scratch seats, which were moved out of `_scratch/` entirely so no future participant can reach them even by a prohibited parent listing. Arm B had not begun, so T15 restarts from the beginning in its scheduled order (A first) with fresh seats. Voided usage is **excluded from S3 and reported as benchmark remediation overhead**, following the Q-001 precedent.
 
 ---
 

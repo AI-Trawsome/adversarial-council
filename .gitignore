@@ -1,3 +1,6 @@
 # Council plugin runtime output (debate ledgers, consult exchange logs).
 # Records that must persist are copied into reviews/ and committed there.
 .council/
+
+# benchmark harness validator dependency (vendored, not part of the plugin)
+bench/vendor/node_modules/
