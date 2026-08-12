@@ -28,6 +28,7 @@ Both amendments were submitted for external ruling before adoption and approved.
 | Q-001 | Shared reviewer scratch directory; T01–T06 treatment | **ruled 2026-08-09 — re-run both arms of T01–T06 (Option 2b)** | consult 006 |
 | Q-002 | T10/T11 share a source path; aggregate treatment | **ruled 2026-08-09 — 25-task primary + T11-dropped sensitivity (Option C)** | consult 006 |
 | A-004 | Arm A critic messages are schema-enforced in the harness | approved, implemented 2026-08-11 | consult 007 |
+| Q-003 | T07 Arm B never used a private seat; T07 re-run in both arms | **ruled 2026-08-12 — re-run both arms, B-first** | consult 008 |
 
 Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07. ☑ A-002-E1 — approved 2026-08-08. ☐ Q-001 ☐ Q-002 — ruled 2026-08-09, approval pending.
 
@@ -206,7 +207,14 @@ The orchestrator's characterization of cross-task exposure as benign was **not a
 
 A 19-task sensitivity analysis may still be reported as a diagnostic, but it is not a substitute for remediation and must not determine whether the re-runs enter the dataset.
 
-**Status:** ordered, not yet executed. Scheduled alongside the remaining batches; T12–T25 proceed in the meantime. The two disclosed T07–T11 parent listings both exposed only opaque seat names (`_scratch/s<12-hex>`, with the decoding map held outside the tree), which condition 12 admits as a recorded deviation rather than a void — but that determination belongs to the condition-12 audit, not to this note.
+**Status:** ordered, not yet executed. Scheduled alongside the remaining batches; T12–T25 proceed in the meantime. ~~The two disclosed T07–T11 parent listings both exposed only opaque seat names (`_scratch/s<12-hex>`, with the decoding map held outside the tree), which condition 12 admits as a recorded deviation rather than a void — but that determination belongs to the condition-12 audit, not to this note.~~
+
+> **CORRECTION, 2026-08-12 (append-only, required by consult 008 condition 10).** The struck sentence above is the orchestrator's original text, preserved rather than rewritten. **It was wrong on two counts**, both disproved by the condition-12 audit it defers to:
+>
+> 1. It says *both* disclosed listings exposed only opaque seat names. **True of one, false of the other** — the T07 Arm A round-2 listing returned task/arm/role/round directory names, not hex.
+> 2. It counts only two listings. **A third exposure existed and was not then known:** T07 Arm B never used a private seat at all, and its defender listed the shared orchestrator scratchpad twice, receiving other tasks' constructor filenames.
+>
+> This is precisely the "characterization of cross-task exposure as benign" that consult 006 declined to accept, written by the party the ruling declined to take at its word. The scepticism was warranted. See **Q-003** below.
 
 ---
 
@@ -276,6 +284,104 @@ A 19-task sensitivity analysis may still be reported as a diagnostic, but it is 
 
 ---
 
+## Q-003 — T07 Arm B never used a private seat: T07 is re-run in both arms
+
+**Rules affected:** Q-001 conditions 2, 6, 9 and 12, and therefore the validity of T07 as a
+paired scoring observation.
+
+**Fifth authorization:** consult exchange 008, 2026-08-12T12:32Z. Committed verbatim at
+`reviews/CHATGPT-RULING-023-t07-armB-isolation.md`,
+`sha256 28863a28973741a86733c047407c2d0c2b8bfc28255cce23868b8fd22e105eb6` — byte-identical
+to the runtime log the plugin wrote at `.council/consult/008-2026-08-12T12-32-29-393Z.md`,
+which is gitignored runtime output. The submission is
+`reviews/CLAUDE-QUERY-022-t07-armB-isolation.md`,
+`sha256 6d39c3963139f4c2f297caac5b9f58cc44caf7ce4cbc7608c67ccc681bf9a07f`.
+
+**The defect.** Q-001 condition 12 ordered an audit of T07–T11 against the final per-seat
+isolation policy. It found that **T07 Arm B never used a private seat**. It worked in the
+orchestrator session's shared scratchpad, which simultaneously held the working files of all
+five T07–T11 constructors and of the contamination auditor, and which the already-voided
+pre-isolation Arm A run later reused. **Arm B's defender listed that directory twice and
+received other tasks' constructor filenames.** Cross-task foreign strings were confirmed for
+T07 pairing T07←T10 explicitly, and also T07←T08, T07←T09, T07←T11 — in Arm B only. That is
+not the opaque-name carve-out; constructor filenames are descriptive, and the audit's name
+inventory confirms Q-001's premise directly (descriptive/opaque counts per task: T07 14/51,
+T08 5/10, T09 8/18, T10 32/12, T11 96/15).
+
+**Why the seat map did not catch it.** The map asserts a T07 Arm B defender seat **that was
+never used**, and names a T07 Arm A critic directory **that does not exist**. The auditor
+re-derived every seat from the 38 participant transcripts instead of trusting the map, which
+is the only reason the finding surfaced. Scans covered each debate's seats, arm log
+directory, arm repo, all participant transcripts and the five Codex rollouts — 221–261
+foreign terms per debate, each scan gated on a known-present control string so a silently
+empty search could not pass as clean.
+
+**Ruling (consult 008): re-run both arms of T07, B-first.** Condition 6 sets the minimum
+immediate invalidation — the exposure voids Arm B — but does not require retaining the other
+arm when that leaves an avoidable, structurally mismatched pair. A replacement Arm B paired
+with the retained Arm A would invert the realized schedule, cross dates and harness regimes,
+and preserve exactly the within-pair asymmetry for which consult 006 rejected Option 2a. The
+cost of avoiding it is one additional debate.
+
+On arm order specifically: a single-arm re-run does **not** satisfy condition 2 merely
+because the original executions ran B-first. Once the original Arm B is void it no longer
+supplies the B-first observation, so pairing the earlier Arm A with a later replacement Arm B
+would make the scored pair A-first in realized time — defeating the draw's purpose of
+balancing temporal and implementation drift.
+
+**Binding conditions, all twelve:**
+
+1. Preserve every prior T07 debate under an unambiguous `VOIDED` label, including the
+   pre-isolation Arm A run and the presently retained A/B pair.
+2. Re-run T07 from the task boundary, **Arm B first, Arm A second**, per the pre-registered
+   schedule.
+3. Same finalized staging, prompts, schema-validation harness, cost capture, provider-rate
+   policy, machine class, scratch policy and plugin pin for both replacement arms.
+4. Fresh repository copies, debate identifiers, Codex threads, no-history subagents, opaque
+   scratch seats, temporary directories, environments and caches.
+5. Verify mechanically that every assigned seat exists, is empty before use, **is the
+   participant's actual working directory**, and matches the path recorded in the manifest.
+6. Derive the post-run seat audit from transcripts and process records **as well as** the
+   seat map. The map is never sufficient evidence by itself.
+7. Require the foreign-scratch declaration from every participant.
+8. Any intelligible foreign filename or content encountered by either replacement arm voids
+   the replacement pair and requires another complete T07 re-run.
+9. Archive old and replacement usage separately; exclude all voided usage from S3 and report
+   it only as remediation overhead.
+10. Record the erroneous seat-map entries and the amendment-status statement as **append-only
+    corrections**, preserving the original text and identifying when and how each was
+    disproved. (Done: see the correction block under Q-001's Status, and the run record.)
+11. **Do not** give the replacement participants this audit, the exposed filenames, prior T07
+    findings, prior reproduction material, or the reason T07 is being re-run.
+12. Only the final clean replacement pair is T07's scoring observation.
+
+**T08–T11: retained, conditionally.** The audit found no foreign strings, cross-seat links,
+shared caches or environment crossings in those tasks, and no reachability channel anywhere
+(no cross-seat symlinks in either direction, no hard links, per-seat venvs and bytecode
+mirrors referencing only their own seat, every seat empty before use). T09–T11 are retained
+as clean. **T08's retention is conditional** on mechanically establishing that the T08 Arm A
+parent listing contained only opaque, undecodable names with no task/arm/role/round/
+repository/mechanism-identifying text, and that no reachable mapping decoded them; the exact
+listing output must be archived. If either fails, **both T08 arms are re-run**. That
+verification is in progress.
+
+**Three claims the final report must keep distinct**, per the ruling — and it must not
+upgrade the third into proof that exposure was impossible:
+
+- **Demonstrably contaminated:** T07 Arm B.
+- **Audited with a recordable opaque-name deviation:** T08 Arm A.
+- **No evidence of exposure within available records:** the remaining retained T08–T11 arms.
+
+**Six undetermined items accepted as recorded limitations**, none changing the disposition:
+the deleted shared-scratch state (moot — T07 is void); incomplete Codex-side observability
+(disclose as an audit limitation, not a clean-room proof); ~66 opaque directories since
+deleted (acceptable where the listings that actually occurred are captured verbatim);
+mapped-but-missing directories (record as provenance defects; the map is not affirmative
+evidence); trace-free channels (an inherent limit of retrospective isolation audits); and
+T01–T06 being out of scope (already fully ordered for re-run).
+
+---
+
 ## Sequencing
 
 The order is forced by dependency, not preference:
@@ -294,3 +400,10 @@ No task result counts toward S1/S2/S3 until steps 1–3 are complete.
 7. Run the contamination-safe dependency screen across all 25 tasks (Q-002 condition 8). If it finds dependent components beyond T10/T11, grading pauses for one uniform component-level rule (Q-002 condition 10).
 
 Steps 5–7 may run in any order relative to the remaining task batches, but all three must complete before any grading begins. No T01–T06 result counts toward S1/S2/S3 until step 5 is complete.
+
+**Amended 2026-08-12 by consult 008.** Step 6 has now executed and produced two further obligations:
+
+8. **Re-run both arms of T07**, Arm B first, under Q-003's twelve conditions. The prior pair and the pre-isolation Arm A run are all preserved as `VOIDED`; only the clean replacement pair is T07's scoring observation. No T07 result counts toward S1/S2/S3 until this completes.
+9. **Establish the T08 Arm A opaque-name carve-out mechanically** — archive the verbatim listing output and prove no reachable mapping decoded the names. If either leg fails, both T08 arms are re-run as well.
+
+Step 7 has **already been triggered in substance**: the T17–T20r contamination audit's cross-task matrices found dependent components beyond T10/T11 (T01/T17 partially overlap ranges in the same source file). Q-002 condition 10 therefore binds — grading pauses for **one uniform component-level sensitivity rule submitted for review**, and pair-by-pair improvisation is forbidden. The dedicated screen still runs, so that the rule is proposed against an independently derived matrix rather than against a by-product of another audit.
