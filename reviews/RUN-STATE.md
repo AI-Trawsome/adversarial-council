@@ -34,9 +34,26 @@
 
 - **Scrub PASS 26/0 ×9** (`--forbidden-sha` asserting the fix commit does not resolve inside each checkout), exclusion policy v2, declared limitation present in every manifest.
 - **Staging PASS 16/0 ×9.** Each staged repo shows exactly one changed path, 0 deletions, and an added-line count equal to that task's artifact line count.
-- **Two audits running:** the T17–T20r contamination audit (seat `T17-T20r-contam-audit`) and the Q-001 condition-12 isolation audit of T07–T11 (seat `Q001-c12-isolation-audit`). **No debate may start until the contamination audit returns its containment verdicts** — a slice that omits part of the defect makes the task ungradeable.
+- **Contamination audit: ALL CLEAR.** 135/135 checks, **all nine FULLY CONTAINED**, 0 leaks, 0 extra sidecar keys, 0 stray files, no mutated clone. Containment holds under both the literal hunk-header reading and the strict changed-lines-only reading; the auditor applied a stricter both-anchors rule to the seven pure insertions across four tasks and all pass. Every syntax check was re-run by the auditor with a negative control proving the checker fires. Deliverables in seat `T17-T20r-contam-audit`.
+- **Q-001 condition-12 isolation audit of T07–T11:** still running (seat `Q001-c12-isolation-audit`).
+- **T01–T06 staging re-verified** as still valid under current policy: PASS 16/0 ×6, one changed path and 0 deletions each. **24 fresh Q-001 re-run seats minted** as `T0N-Q001rerun-<arm>-<role>`, verified empty, globally unique. Map now 119 entries.
 
-**Next actions, in order:** contamination audit returns → run the nine in schedule order (§3.2) → Q-001 T01–T06 re-run → Q-002 dependency screen → S3 → `READY-TO-GRADE.md`.
+### Dependency facts already in hand (feed the Q-002 screen; do not re-derive from memory)
+
+The contamination auditor ran the cross-task matrices over all 25 tasks:
+
+- **Same repo + same source path:** T01/T17, T07/T21, T09/T25, T10/T11, T15/T18. No pair shares a buggy SHA.
+- **Overlapping artifact ranges:** **T01/T17 (partial)**, T10/T11 (total). T10/T11 was the named positive control and it fired, validating the method.
+- **Fix already present in the other task's tree** (fix-owner → tree-owner): T17→T01, T17→T21, T07→T21, T07→T01, T07→T08, T08→T21, T18→T15, T18→T04, T18→T10, T18→T11, T09→T25, T02→T25, T16→T25, T24→T12, T06→T22, T05→T10, T05→T11, T05→T15, T04→T11, T10→T11.
+- Going past its brief, the auditor content-tested the five same-path pairs for whether the later artifact **actually displays** the earlier fix: **T10/T11 yes, in full**; the four pairs touching the nine — **no disclosure**.
+
+**This means Q-002 condition 10 is engaged: dependent components exist beyond T10/T11** (T01/T17 overlap the same file's ranges partially). Condition 10 pauses **grading**, not running, and requires one uniform component-level sensitivity rule submitted for review rather than pair-by-pair improvisation. Plan: run the dedicated Q-002 condition-8 screen (seat `Q002-c8-dependency-screen`) to produce the formal matrix independently, **then** consult once with complete data. Do not improvise a rule.
+
+**Next actions, in order:** run the nine in schedule order (§3.2) → Q-001 T01–T06 re-run → Q-002 dependency screen → consult on the uniform component rule → S3 → `READY-TO-GRADE.md`.
+
+### T17 — in flight
+
+Arm A first (schedule byte 136). Debate `dbt-2026-08-12-b176f1`. Round 1 critic spawned; phase `awaiting-critique`. Arm B not yet initialized.
 
 **Note on where run state lives:** `/Users/michaeltraw/Dev/council-bench` is **not** a git repository. Only `reviews/` in the marketplace repo is committed; the artifacts, staged repos, scrubbed checkouts, seats and usage payloads live on disk outside version control. "Commit after each task" therefore means committing this file and the batch records.
 
@@ -150,7 +167,7 @@ A-first: T03, T04, T06, T08, T11, T12, T14, T15, T17, T25
 - `BENCHMARK.md` sha256 = `72d09391d09a91db1083420b293968c8c5c87d3ee3ead92ad0af00734557562f` — **never edit this file.**
 - Plugin pinned at `f976990`, no local modifications; protocol suite **46 passed, 0 failed**.
 - Codex CLI `0.147.0`; Anthropic `claude-opus-5`; OpenAI `gpt-5.6-sol`.
-- Both arms' `context.md` **must hash identically**; framing `focusSha256` must equal `63a64714bdf75511421b8870dfdbf83e541b28391ad7ca92db938ef6c47a22df`.
+- Both arms' `context.md` **must hash identically**. Framing: the file `bench/framing/review-window.txt` hashes to `63a64714bdf75511421b8870dfdbf83e541b28391ad7ca92db938ef6c47a22df`, and every debate's `debate.focus` — that same text with the trailing newline stripped, which is what `init` stores — hashes to `f96421a87c29ea7ca08d2881258c349d5de3df363f8f3d62a61faf9ea1cfd07b`. **Both values must be checked; they are different hashes of the same frozen text.** Earlier revisions of this file recorded only the first and labelled it `focusSha256`, which is the field name of the second — a wording defect found on 2026-08-12 when the gate tripped on T17 Arm A. Verified at that point that T14, T15 and T16 carry `f96421a8…` in **both** arms, so the substantive invariant never moved; only this note was wrong.
 - Arm A template `_prompts/critique-armA.md` differs from `prompts/critique.md` by exactly two role-reference lines.
 - Round cap 3; no env overrides except `COUNCIL_MOCK_CRITIQUE` for Arm A, and that file is now **schema-gated** — never set it by hand, always go through `arm_inject_A` → `bench/inject-armA.mjs`.
 - **A-004 harness freeze (verify before each task):** `bench/validate-critique.mjs` `8d196a4715f0f1b913f5ead3fd1e06bd08fda10cb6b298c40d0664ce7c07aa36`, `bench/inject-armA.mjs` `9006f6de740397ef5c470ae99e4a180238667d4245c8bbe5ed5681bb74457b5f`, `bench/test/harness-schema-tests.mjs` `be85f57ace244eefd689664daeb97eb89a433085b56108ede2996891a5cef52a`, schema `6e78ea61a2ddad2d43c70c5f12d05cf9f3043726676d4716de4b3e7f294fafd3`. Harness suite **69 passed, 0 failed**; plugin suite still **46 passed, 0 failed**. (The test file was re-frozen once on 2026-08-11 after a fixture correction; the two executable files have not moved. See A-004 condition 5.)
