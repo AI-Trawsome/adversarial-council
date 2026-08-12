@@ -355,15 +355,68 @@ balancing temporal and implementation drift.
     findings, prior reproduction material, or the reason T07 is being re-run.
 12. Only the final clean replacement pair is T07's scoring observation.
 
-**T08–T11: retained, conditionally.** The audit found no foreign strings, cross-seat links,
-shared caches or environment crossings in those tasks, and no reachability channel anywhere
-(no cross-seat symlinks in either direction, no hard links, per-seat venvs and bytecode
-mirrors referencing only their own seat, every seat empty before use). T09–T11 are retained
-as clean. **T08's retention is conditional** on mechanically establishing that the T08 Arm A
-parent listing contained only opaque, undecodable names with no task/arm/role/round/
-repository/mechanism-identifying text, and that no reachable mapping decoded them; the exact
-listing output must be archived. If either fails, **both T08 arms are re-run**. That
-verification is in progress.
+**T08–T11: T09–T11 retained clean; T08 re-run in both arms.** The audit found no foreign
+strings, cross-seat links, shared caches or environment crossings in those tasks, and no
+reachability channel anywhere (no cross-seat symlinks in either direction, no hard links,
+per-seat venvs and bytecode mirrors referencing only their own seat, every seat empty before
+use). **T09, T10 and T11 are retained as clean in all six debates.**
+
+**T08's conditional retention failed.** The ruling made T08 contingent on two limbs, and
+required re-running both arms if either failed.
+
+- **Limb (a) — the listing's own text — passes.** The prohibited listing produced exactly
+  **one** entry: a 12-hex opaque seat name behind a literal prefix character, naming a
+  directory that no longer exists and appearing as neither key nor value in the mapping.
+  Zero identifying entries. The six adjacent lines in the same tool result identify no
+  foreign entity — the participant's own assigned seat, two interpreter locations, two
+  "not found" strings, and a version string. The auditor also reproduced the collation under
+  the same locale to confirm that **output truncation was not doing the work**; the
+  identifying material sorts well past the truncation point either way. Tested, not asserted.
+  This is materially unlike the T07 Arm A listing, which returned three entries identifying
+  on four axes at once.
+- **Limb (b) — decodability — fails, on a positive finding rather than absent evidence.**
+  Treating "the mapping lives outside the scratch parent by design" as a claim to verify
+  rather than a premise, the auditor traced the mapping's location over time from three
+  independent sources — the orchestrator's own tool calls, filesystem birth/modification
+  times, and the participant's transcript. All three agree: **the seat-map file was created
+  inside the very directory the participant listed** (06:59:19Z), rewritten there into the
+  per-(task, arm, role) form governing T07–T11 (07:49:48Z) and patched there (07:50:06Z).
+  The listing ran at **08:17:51Z**. The map was moved out to its present location at
+  **08:24:53Z — 422 seconds after the listing**, in the same orchestrator turn that
+  submitted that participant's round-1 rebuttal. *The relocation was the remediation for
+  this very disclosure.* Corroborated by birth timestamps: the present parent was born at the
+  relocation time while the file inside retains its 06:59:19Z birth, the signature of a file
+  created elsewhere and moved in.
+
+So at the instant of the listing, a complete decoder for every opaque seat name in T07–T11
+sat one unrestricted read away at a fixed relative path from the participant's own seat.
+**The pre-existing record's premise — that the decoding map is held outside the tree — is
+true only from 08:24:53Z onward, and false for the moment that matters.**
+
+For the record, the participant did **not** use it: zero decoder-related tokens anywhere in
+its transcript, the only scratch token being its own seat, its brief never mentioned the
+mapping and named no other seat, and it disclosed the breach unprompted. But the ruling
+tests **access, not use**, and that is the right test — the participant had already crossed
+the same instruction boundary that was the only thing standing between it and the decoder.
+
+**Disposition: re-run both arms of T08** under the same pair-level rule as T07, i.e. Q-003's
+twelve conditions applied to T08 with its own pre-registered arm order (**A-first**).
+**T08 Arm B's own conduct tested clean on every measure** — it is re-run by the conditional,
+not by any exposure of its own, and the record preserves that distinction.
+
+**Scope, checked rather than assumed.** The decoder was exposed in that directory from
+06:59:19Z to 08:24:53Z. Four participants were active in that window: the T07 Arm A round-3
+pair and the T08 Arm A pair. Only the T08 Arm A defender listed the parent; the other three
+never referenced it and never named the decoder. T07 is void in both arms regardless, so the
+window adds nothing further to the re-run list.
+
+**Two further undetermined items**, recorded: about 66 opaque directories present in the
+scratch parent on that date have since been deleted, so whether any *other* non-seat file sat
+there at 08:17:51Z cannot be reconstructed — the decoder is the only non-seat entry that can
+be positively placed there; and the orchestrator's session helper library, which defined the
+arm functions and may or may not have carried seat attributions, sat in a brief-prohibited
+path and has since been deleted, so it cannot be inspected. The participant's transcript
+shows no access to either.
 
 **Three claims the final report must keep distinct**, per the ruling — and it must not
 upgrade the third into proof that exposure was impossible:
