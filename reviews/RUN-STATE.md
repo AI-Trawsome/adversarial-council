@@ -80,7 +80,11 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 - **Usage: 19/19 captured, 0 missing** (`_rerun2/claude-usage-T17-T20r.json`), collected against the spawn-time roster with no reconstruction needed.
 - **Cost:** Arm A $32.97, Arm B $2.84 (codex $0.06, 2.2%), **B/A 0.09×**. Running median across 17 tasks **0.33×** against the 3.0× ceiling — **PASS**.
 
-### T18 — Arm B CLOSED, Arm A next
+### T18 — Arm B CLOSED, Arm A in flight
+
+Arm A: debate `dbt-2026-08-12-0b5faf`. **`CONTEXT MATCH 0af808d2c237d73f7bd8f27d03b6179b20b45bdf1286195182306b19c938a775`**. Round 1 injected first attempt: 3 findings, all `strong`, 0 flags. Round-1 defender running. **Arm A's round-1 critic independently reached the same suite-unrunnable conclusion as both Arm B seats** — three of three seats so far agree, which is what makes it an environment property rather than a reviewer-dependent one on this task. It also archived a repro with a falsifiability control and a byte-identical clean rerun.
+
+
 
 Arm B (scheduled first): debate `dbt-2026-08-12-5fb4a6`, 3 rounds, **5 findings (codex 2, claude 3)**, 4 accepted + **1 partially-accepted**, severities 1 high / 2 medium / 2 low, all `strong`, **0 unsupported, 0 protocol flags**, NO-SHIP. Closed at the round cap with 1 unsettled finding. `close.err` **empty** — the surviving dispute carries deciding evidence. Tree intact, diff sha `3c2a3911…`, 1 changed file. All three Codex turns `usageStatus: captured` (59.6s / 21.0s / 15.3s). Seat attests `cwd == seat`.
 
