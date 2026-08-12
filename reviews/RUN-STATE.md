@@ -97,7 +97,15 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 - **Protocol observations.** Arm B's defender filed **zero responses in two rounds**, legally (no `open` targets; acting on one's own contested finding is optional) and wrote the status-by-status derivation into `notes` so nothing was conceded by silence. Arm B's defender also **out-produced its critic 3 findings to 2** — second time in the run after T13 Arm B; defender-claimed findings are not part of the independent variable, since the defender is Claude in both arms. In Arm A both `partially-accepted` findings **reopened** at round 2 via `partial`-with-new-evidence rather than terminal `accept`.
 - **Reviewer conduct.** One seat needed a counterfactual requiring a modified tree and **copied the tree into its own seat to mutate the copy**, leaving the review repo untouched — a resolution the scratch policy implies but never spells out. Four seats separately disclosed seeing foreign scratch **path strings quoted in the ledger** and declining to follow them, rebuilding every experiment from prose instead; no mechanism enforces that, so explicit disclosure is the only evidence it holds.
 
-### A seat-map hygiene note### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
+### T21 — Arm B CLOSED, Arm A in flight
+
+Arm B (scheduled first): debate `dbt-2026-08-12-1a1b32`, 3 rounds, 4 findings (codex 3, claude 1), **2 accepted, 2 withdrawn**, 3 high / 1 medium, support 3 `strong` + **1 `moderate`** (first non-`strong` finding in the batch), 0 unsupported, **0 protocol flags**, NO-SHIP, `close.err` empty, tree intact (`d52344bf…`).
+
+**Two terminal withdrawals by the Codex critic in one debate** — it used `accept` on its own contested findings twice. Withdrawn findings are abandoned outright and excluded from the verdict, so this materially changes what reached close; it is not ledger bookkeeping. Against this, **zero withdrawals in any Arm A debate this batch**, where critics used `partial`-with-new-evidence three times. See the briefing-asymmetry entry in §6 — the mechanism is documented in the frozen prompt both arms inherit, but only Arm A's critic is told it is a trap.
+
+Arm A: debate `dbt-2026-08-12-8105e5`, **`CONTEXT MATCH ebdf80b4677b83dea8dc1b998a5aa09262e9155c86dd4cc86cfdf5d5da06860f`**. Round-1 critic running.
+
+### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
 The map contains a `T<NN>-B-critic` entry for **every** task, but **Arm B's critic is Codex, driven by the runner, and never occupies a scratch seat at all.** Those entries are therefore permanently unused by construction, and `T17-B-critic` has no `SEAT-ATTEST.json` for exactly that reason. This is *expected*, and it is **not** the T07 defect: there the map asserted a seat for the Arm B **defender** — a Claude seat that should have existed and did not, while the participant actually ran in shared scratch. Distinguish the two when auditing: an unused `B-critic` entry is structural; an unused `B-def` or any `A-*` entry is a red flag.
 
