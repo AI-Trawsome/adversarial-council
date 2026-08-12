@@ -66,7 +66,9 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 ### T17 — in flight
 
-Arm A first (schedule byte 136). Debate `dbt-2026-08-12-b176f1`. Round 1 critic spawned; phase `awaiting-critique`. Arm B not yet initialized.
+Arm A first (schedule byte 136). Debate `dbt-2026-08-12-b176f1`. **Rounds 1 and 2 closed; round 3 (final) critic running.** Ledger after round 2: 6 findings (codex 5, claude 1), 5 accepted + 1 partially-accepted, severities 2 high / 3 medium / 1 low, **all `strong`, 0 unsupported, 0 protocol flags**. Both Arm A injections passed the A-004 schema gate on the **first attempt**. Arm B not yet initialized.
+
+**Brief improvement made mid-task, recorded.** `mkbrief.mjs` had a final-round note for defenders but none for critics, so a round-3 critic was not being warned that anything the defender contests closes disputed with no reply from it. Added a critic-specific final-round section (deciding evidence; a new finding gets one answer and no rebuttal; `partial`-with-new-evidence rather than terminal `accept`). T17 Arm A round 3 is the first turn to receive it. This strengthens a brief; it changes no rule, no environment and no input the reviewer reviews, and it applies to both arms' critics from here — but Arm B's critic is Codex driven by the runner and receives no orchestrator brief at all, so **this affects Arm A only and must be disclosed as such** rather than described as symmetric.
 
 **Attestation boundary — resolved in practice.** Both T17 Arm A seats now carry `SEAT-ATTEST.json` with `match: true` and `cwd == seat`. The critic seat is reused across rounds and wrote its attestation at round 2, so only its round-1 turn predates the requirement. Original note follows.
 
