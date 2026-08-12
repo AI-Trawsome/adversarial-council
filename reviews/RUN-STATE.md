@@ -2,19 +2,30 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-11, after **T16 closed (both arms)** and the T12–T16 batch record was written. **STOPPED CLEANLY AT A BATCH BOUNDARY — see §0 to resume.**
+**Last updated:** 2026-08-12, during the **T17–T20r construction batch**. See §0.
 
 ---
 
 ## 0. RESUME HERE
 
-**Nothing is mid-flight; no debate is open; no subagent is running. T01–T16 are closed, both arms. The T12–T16 batch is fully closed out** — usage collected (31/31 and 11/11 captured, 0 missing), S3 computed, `reviews/BATCH-T12-T16.md` written and committed.
+**T01–T16 are closed, both arms.** The T12–T16 batch is fully closed out — usage collected (31/31 and 11/11 captured, 0 missing), S3 computed, `reviews/BATCH-T12-T16.md` written and committed.
 
-**The single next action:** begin the **T17–T20r construction batch**. Nine tasks remain: **T17, T18, T21, T22, T23, T24, T25, T19r, T20r**. None is constructed yet. Follow §3 steps 1–7 for all nine (verify SHA → construct → contamination audit → scrub → audit scrub → stage → audit staging), then run them in schedule order per §3.2.
+### In flight (2026-08-12)
 
-Source clones are all present: `T01`(aiohttp), `_src-redis-py`, `_src-undici`, `_src-bullmq`, `_src-ioredis`, `_src-celery`, `_src-fastify`, and newly cloned `_src-pino` (T19r), `_src-sqlalchemy` (T20r), `_src-fastapi` (T23). **No clone work is owed.**
+**No debate is open.** The batch is in **construction**, step 2 of §3.
 
-Seats for T17+ are **not yet minted** — add them to `_seatmap/SEAT-MAP.json` as opaque `_scratch/s<12-hex>` names, one per (task, arm, role) plus one per constructor, and verify each is empty before use (Q-001 condition 7).
+- **Frozen-invariant gate re-verified** this session: all six frozen hashes OK, plugin at `f976990` and clean, protocol suite **46/0**, harness schema suite **69/0**.
+- **All nine buggy SHAs verified** as their fix commit's parent, dates matching Appendix A. One note: **T20r's fix has author date 2026-07-21 and committer date 2026-07-22**; Appendix A records 2026-07-21. The other eight fixes have identical author and committer dates, so Appendix A's convention is the **author** date and T20r matches under it. The ≥2025-07-01 screen holds under either date. Recorded, not a conflict.
+- **Seats minted:** 46 for this batch (9 constructors + 36 reviewer seats + 1 contamination auditor), plus 2 audit seats (`Q001-c12-isolation-audit`, `Q002-c8-dependency-screen`). All verified empty before use, no duplicate directory anywhere in the map (Q-001 condition 7). Map now holds 95 entries.
+- **`_rerun2/usage-roster-T17-T20r.json` opened**, with each agent id recorded **at spawn time**.
+- **Constructors:** nine spawned in parallel behind the contamination boundary.
+- **Q-001 condition-12 isolation audit of T07–T11:** spawned in parallel; independent of construction.
+
+**Next actions, in order:** finish construction → contamination audit (seat `T17-T20r-contam-audit`) → scrub + audit scrub + stage + audit staging for all nine (§3 steps 4–7) → run in schedule order (§3.2) → Q-001 T01–T06 re-run → Q-002 dependency screen → S3 → `READY-TO-GRADE.md`.
+
+Source clones are all present: `T01`(aiohttp), `_src-redis-py`, `_src-undici`, `_src-bullmq`, `_src-ioredis`, `_src-celery`, `_src-fastify`, `_src-pino` (T19r), `_src-sqlalchemy` (T20r), `_src-fastapi` (T23). **No clone work is owed.**
+
+Helper scripts were recreated this session in the session scratchpad (**not committed**): `armlib.sh` (§3.1), `mkbrief.mjs`, and the brief templates `BRIEF-CONSTRUCT.tmpl` / `BRIEF-CRITIC-A.tmpl` / `BRIEF-DEFENDER.tmpl`. Recreate from §3.1 and §7 if the scratchpad is gone.
 
 To pick up mid-task at any point, run `arm_cp <task> <arm>` (recreate `armlib.sh` from §3.1 first if the scratchpad is gone) and read `phase`:
 
