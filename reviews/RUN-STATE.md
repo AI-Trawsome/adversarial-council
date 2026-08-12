@@ -80,17 +80,22 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 - **Usage: 19/19 captured, 0 missing** (`_rerun2/claude-usage-T17-T20r.json`), collected against the spawn-time roster with no reconstruction needed.
 - **Cost:** Arm A $32.97, Arm B $2.84 (codex $0.06, 2.2%), **B/A 0.09×**. Running median across 17 tasks **0.33×** against the 3.0× ceiling — **PASS**.
 
-### T18 — Arm B CLOSED, Arm A in flight
+### T18 — CLOSED, both arms
 
-Arm A: debate `dbt-2026-08-12-0b5faf`. **`CONTEXT MATCH 0af808d2c237d73f7bd8f27d03b6179b20b45bdf1286195182306b19c938a775`**. Round 1 injected first attempt: 3 findings, all `strong`, 0 flags. Round-1 defender running. **Arm A's round-1 critic independently reached the same suite-unrunnable conclusion as both Arm B seats** — three of three seats so far agree, which is what makes it an environment property rather than a reviewer-dependent one on this task. It also archived a repro with a falsifiability control and a byte-identical clean rerun.
+| arm | debate | rounds | findings | claimants | severities | statuses | ship | flags |
+|---|---|---|---|---|---|---|---|---|
+| B (first) | `dbt-2026-08-12-5fb4a6` | 3 | 5 | codex 2, claude 3 | 1 high, 2 med, 2 low | accepted 4, **partially-accepted 1** | NO-SHIP | 0 |
+| A | `dbt-2026-08-12-0b5faf` | 2 | 4 | codex 4 | 1 high, 2 med, 1 low | accepted 4 | NO-SHIP | 0 |
 
-
-
-Arm B (scheduled first): debate `dbt-2026-08-12-5fb4a6`, 3 rounds, **5 findings (codex 2, claude 3)**, 4 accepted + **1 partially-accepted**, severities 1 high / 2 medium / 2 low, all `strong`, **0 unsupported, 0 protocol flags**, NO-SHIP. Closed at the round cap with 1 unsettled finding. `close.err` **empty** — the surviving dispute carries deciding evidence. Tree intact, diff sha `3c2a3911…`, 1 changed file. All three Codex turns `usageStatus: captured` (59.6s / 21.0s / 15.3s). Seat attests `cwd == seat`.
-
-**Fidelity variable — T18's project suite is NOT runnable as the project defines it**, the first such task in this batch, and **both** Arm B seats independently reached that conclusion. It requires installing dependencies into the review checkout and writing a generated build artifact inside it, both forbidden by the frozen scratch policy. Each seat ran the directly-executable dependency-free tests instead (passing) and declined the non-vendored conformance suite. Recorded as an environment fact, never as evidence, and **recorded per reviewer** — T12 established that two seats on one task can disagree about runnability.
-
-**Two protocol observations.** A defender filed **zero responses in two separate rounds** (2 and 3), legally: no ledger entry carried `open` status, and acting on one's *own* contested finding is an opportunity rather than an obligation. Both times it wrote the status-by-status derivation into `notes` **so nothing was conceded by silence** — an empty `responses` array is otherwise indistinguishable from inattention. And the defender **out-produced the critic 3 findings to 2**, the second time in the run (after T13 Arm B). Defender-claimed findings are *not* part of the independent variable — the defender is Claude in both arms — so this is a property of the protocol offering the channel, not of critic identity.
+- Arm order followed the schedule (B first, byte 77). **`CONTEXT MATCH 0af808d2c237d73f7bd8f27d03b6179b20b45bdf1286195182306b19c938a775`**, re-checked after both closed. Both arms' trees intact with the **same** diff sha `3c2a3911…`.
+- All findings `strong` in both arms; **0 unsupported, 0 protocol flags**; `close.err` empty in both, so T18 Arm B's surviving dispute carries deciding evidence.
+- Both Arm A injections passed the A-004 gate **first attempt**; attempt counters show one valid attempt each.
+- All three Arm B Codex turns `usageStatus: captured` (59.6s / 21.0s / 15.3s).
+- **Cost:** Arm A $9.44, Arm B $7.41 (codex $0.28, 3.8%), **B/A 0.79×**. Running median across 18 tasks **0.45×** vs the 3.0× ceiling — **PASS**.
+- **Usage 26/26 captured, 0 missing.**
+- **Fidelity: T18's project suite is NOT runnable** as the project defines it — its test targets need dependencies absent from the checkout, and installing into the review tree is forbidden. **All four seats reached this independently**, so it is an environment property of T18 rather than reviewer-dependent. Each ran the dependency-free subset standalone instead; one recorded that the subset **passes with the defects present**, which is itself a fidelity fact worth carrying to grading. Recorded per reviewer, never as evidence.
+- **Protocol observations.** Arm B's defender filed **zero responses in two rounds**, legally (no `open` targets; acting on one's own contested finding is optional) and wrote the status-by-status derivation into `notes` so nothing was conceded by silence. Arm B's defender also **out-produced its critic 3 findings to 2** — second time in the run after T13 Arm B; defender-claimed findings are not part of the independent variable, since the defender is Claude in both arms. In Arm A both `partially-accepted` findings **reopened** at round 2 via `partial`-with-new-evidence rather than terminal `accept`.
+- **Reviewer conduct.** One seat needed a counterfactual requiring a modified tree and **copied the tree into its own seat to mutate the copy**, leaving the review repo untouched — a resolution the scratch policy implies but never spells out. Four seats separately disclosed seeing foreign scratch **path strings quoted in the ledger** and declining to follow them, rebuilding every experiment from prose instead; no mechanism enforces that, so explicit disclosure is the only evidence it holds.
 
 ### A seat-map hygiene note### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
