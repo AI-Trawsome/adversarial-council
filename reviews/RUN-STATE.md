@@ -55,6 +55,8 @@ The contamination auditor ran the cross-task matrices over all 25 tasks:
 
 Arm A first (schedule byte 136). Debate `dbt-2026-08-12-b176f1`. Round 1 critic spawned; phase `awaiting-critique`. Arm B not yet initialized.
 
+**Attestation boundary, recorded:** the `SEAT-ATTEST.json` requirement (Q-003 condition 5) was added to the brief templates *after* the T17 Arm A round-1 critic was spawned, so that one seat has no attestation file. It is a pure addition — it changes nothing a reviewer can see or do, and applies symmetrically to both arms — so it does not make T17 asymmetric. For that one seat, seat usage is verified post-hoc from its transcript, which is the same method the condition-12 audit used and the method Q-003 condition 6 now requires anyway. **Every seat spawned from this point on carries the attestation.**
+
 **Note on where run state lives:** `/Users/michaeltraw/Dev/council-bench` is **not** a git repository. Only `reviews/` in the marketplace repo is committed; the artifacts, staged repos, scrubbed checkouts, seats and usage payloads live on disk outside version control. "Commit after each task" therefore means committing this file and the batch records.
 
 Source clones are all present: `T01`(aiohttp), `_src-redis-py`, `_src-undici`, `_src-bullmq`, `_src-ioredis`, `_src-celery`, `_src-fastify`, `_src-pino` (T19r), `_src-sqlalchemy` (T20r), `_src-fastapi` (T23). **No clone work is owed.**
