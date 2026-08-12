@@ -97,13 +97,19 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 - **Protocol observations.** Arm B's defender filed **zero responses in two rounds**, legally (no `open` targets; acting on one's own contested finding is optional) and wrote the status-by-status derivation into `notes` so nothing was conceded by silence. Arm B's defender also **out-produced its critic 3 findings to 2** — second time in the run after T13 Arm B; defender-claimed findings are not part of the independent variable, since the defender is Claude in both arms. In Arm A both `partially-accepted` findings **reopened** at round 2 via `partial`-with-new-evidence rather than terminal `accept`.
 - **Reviewer conduct.** One seat needed a counterfactual requiring a modified tree and **copied the tree into its own seat to mutate the copy**, leaving the review repo untouched — a resolution the scratch policy implies but never spells out. Four seats separately disclosed seeing foreign scratch **path strings quoted in the ledger** and declining to follow them, rebuilding every experiment from prose instead; no mechanism enforces that, so explicit disclosure is the only evidence it holds.
 
-### T21 — Arm B CLOSED, Arm A in flight
+### T21 — CLOSED, both arms
 
-Arm B (scheduled first): debate `dbt-2026-08-12-1a1b32`, 3 rounds, 4 findings (codex 3, claude 1), **2 accepted, 2 withdrawn**, 3 high / 1 medium, support 3 `strong` + **1 `moderate`** (first non-`strong` finding in the batch), 0 unsupported, **0 protocol flags**, NO-SHIP, `close.err` empty, tree intact (`d52344bf…`).
+| arm | debate | rounds | findings | claimants | severities | statuses | ship | flags |
+|---|---|---|---|---|---|---|---|---|
+| B (first) | `dbt-2026-08-12-1a1b32` | 3 | 4 | codex 3, claude 1 | 3 high, 1 med | accepted 2, **withdrawn 2** | NO-SHIP | 0 |
+| A | `dbt-2026-08-12-8105e5` | 3 | 6 | codex 6 | 4 high, 2 med | accepted 4, **partially-accepted 2** | NO-SHIP | 0 |
 
-**Two terminal withdrawals by the Codex critic in one debate** — it used `accept` on its own contested findings twice. Withdrawn findings are abandoned outright and excluded from the verdict, so this materially changes what reached close; it is not ledger bookkeeping. Against this, **zero withdrawals in any Arm A debate this batch**, where critics used `partial`-with-new-evidence three times. See the briefing-asymmetry entry in §6 — the mechanism is documented in the frozen prompt both arms inherit, but only Arm A's critic is told it is a trap.
-
-Arm A: debate `dbt-2026-08-12-8105e5`, **`CONTEXT MATCH ebdf80b4677b83dea8dc1b998a5aa09262e9155c86dd4cc86cfdf5d5da06860f`**. Round-1 critic running.
+- Arm order per schedule (B first, byte 51). **`CONTEXT MATCH ebdf80b4677b83dea8dc1b998a5aa09262e9155c86dd4cc86cfdf5d5da06860f`**. Both trees intact, same diff sha `d52344bf…`. `close.err` empty in both — Arm A closed at the round cap with 2 unsettled findings, all carrying deciding evidence. 0 unsupported anywhere; support levels 3 `strong` + 1 `moderate` (B), 5 `strong` + 1 `moderate` (A).
+- All three Arm A injections **first attempt** (11 of 11 for the batch).
+- **Cost:** Arm A $27.84, Arm B $9.13 (codex $0.37, 4.0%), **B/A 0.33×**. Running median across 19 tasks **0.33×** vs 3.0× — **PASS**. Usage **35/35 captured, 0 missing**.
+- **Fidelity, both arms:** an optional **compiled accelerator is not built** in this environment and cannot be built without writing inside the frozen checkout. All four seats hit it, recorded it as an environment limit, and none inferred anything from the resulting test failures. One Arm A critic put the limit **inside the affected finding's own `evidence` field**, so a grader meets the caveat attached to the claim it qualifies rather than only in a fidelity note.
+- **The withdrawal contrast, on one task with identical input.** Arm B's Codex critic used terminal `accept` on its own contested findings **twice**, abandoning both — half its findings never reached the verdict. Arm A's critic instead **reopened both of its contested findings with new evidence**, and the round-2 defender then **accepted all four open findings**, including both reopened ones. Same protocol, same artifact, opposite dispositions. See the briefing-asymmetry entry in §6: only Arm A's critic is told that `accept`-on-own-finding is a trap.
+- **Reviewer conduct.** Arm A seats built repro scripts that **exit non-zero unless the claim reproduces**, with controls that must come back clean — stronger than the scratch policy requires, which asks only for captured output and exit status. A script that always exits 0 satisfies the letter of that and proves nothing.
 
 ### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
