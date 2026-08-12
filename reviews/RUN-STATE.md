@@ -64,15 +64,15 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 **Next actions, in order:** run the nine in schedule order (§3.2) → Q-001 T01–T06 re-run → Q-002 dependency screen → consult on the uniform component rule → S3 → `READY-TO-GRADE.md`.
 
-### T17 — in flight
+### T17 — Arm A CLOSED, Arm B in flight
 
-Arm A first (schedule byte 136). Debate `dbt-2026-08-12-b176f1`. **Rounds 1 and 2 closed; round 3 (final) critic running.** Ledger after round 2: 6 findings (codex 5, claude 1), 5 accepted + 1 partially-accepted, severities 2 high / 3 medium / 1 low, **all `strong`, 0 unsupported, 0 protocol flags**. Both Arm A injections passed the A-004 schema gate on the **first attempt**. Arm B not yet initialized.
+Arm A first (schedule byte 136), **closed**: debate `dbt-2026-08-12-b176f1`, 3 rounds, **7 findings** (codex 6, claude 1), **all 7 `accepted`**, severities 1 critical / 2 high / 3 medium / 1 low, **all `support_level: strong`, 0 unsupported, 0 protocol flags**. Ship line NO-SHIP. `close.err` empty — no disputed finding closed without deciding evidence. Tree intact (`arm_clean_check` treeIntact true, 1 changed file, diff sha `93f59f92…`). **All three Arm A injections passed the A-004 schema gate on the first attempt**; `attempts-r{1,2,3}.json` each show one valid attempt and no rejected payload was archived, so no correction was consumed.
 
-**Brief improvement made mid-task, recorded.** `mkbrief.mjs` had a final-round note for defenders but none for critics, so a round-3 critic was not being warned that anything the defender contests closes disputed with no reply from it. Added a critic-specific final-round section (deciding evidence; a new finding gets one answer and no rebuttal; `partial`-with-new-evidence rather than terminal `accept`). T17 Arm A round 3 is the first turn to receive it. This strengthens a brief; it changes no rule, no environment and no input the reviewer reviews, and it applies to both arms' critics from here — but Arm B's critic is Codex driven by the runner and receives no orchestrator brief at all, so **this affects Arm A only and must be disclosed as such** rather than described as symmetric.
+Arm B: debate `dbt-2026-08-12-85005d`. **`arm_context_match` printed CONTEXT MATCH `de37bc62bc6d4575d13a866ff2be4a74b9bc14b6eb58a5189c58558fb4d04fe7`** — both arms' `context.md` byte-identical. Codex CLI verified `0.147.0`. Round 1 Codex critique done: 2 findings, both `strong`, `usageStatus: captured`, `durationMs` 69277. Round-1 defender running.
 
-**Attestation boundary — resolved in practice.** Both T17 Arm A seats now carry `SEAT-ATTEST.json` with `match: true` and `cwd == seat`. The critic seat is reused across rounds and wrote its attestation at round 2, so only its round-1 turn predates the requirement. Original note follows.
+Every T17 seat so far attests `cwd == seat`, `match: true`.
 
-**Attestation boundary, recorded:** the `SEAT-ATTEST.json` requirement (Q-003 condition 5) was added to the brief templates *after* the T17 Arm A round-1 critic was spawned, so that one seat has no attestation file. It is a pure addition — it changes nothing a reviewer can see or do, and applies symmetrically to both arms — so it does not make T17 asymmetric. For that one seat, seat usage is verified post-hoc from its transcript, which is the same method the condition-12 audit used and the method Q-003 condition 6 now requires anyway. **Every seat spawned from this point on carries the attestation.**
+**Both T07 and T08 staging re-verified PASS 16/0** under current policy, one changed path and 0 deletions each, so their Q-003 re-runs proceed from the existing finalized staging (condition 3) with fresh working copies (condition 4). No re-staging owed.
 
 **Note on where run state lives:** `/Users/michaeltraw/Dev/council-bench` is **not** a git repository. Only `reviews/` in the marketplace repo is committed; the artifacts, staged repos, scrubbed checkouts, seats and usage payloads live on disk outside version control. "Commit after each task" therefore means committing this file and the batch records.
 
