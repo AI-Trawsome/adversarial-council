@@ -58,7 +58,9 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 **Erratum:** ruling 009 §1 illustrated the drops as T11/T17/T21/T25/T18. That list came from the orchestrator's own query §4, which wrongly assumed a higher task id meant a later fix — false for T01|T17 and T15|T18, because T19/T20 were struck pre-freeze. Consult 010 confirmed **the criterion governs over the illustration**. Every sensitivity computation must be derived from the component table, **never from a hard-coded task list**.
 
-**Conditions 12 and 13 dispatched** to the same screen agent (it holds the derivation): a mechanical path-normalization/rename check — case folding, `--follow`/`-M` rename detection, symlink and blob-identity resolution — because the screen matched `sourcePath` as a **string**, which would miss a renamed-but-identical file; and the four-alternate screen (A01, A05, A06, A07) against all 25 primaries and each other. **If the rename check yields a new component the sensitivity dataset changes**, and the ruling requires such a component be handled before grading, not after.
+**Conditions 12 and 13: DONE, no change to the component set.** Rename/normalization check found **0 renames across 32 same-repo differing-path pairs** (decided by blob coexistence in both buggy trees, 32/32, independent of any similarity threshold), 0 fold-only matches, 0 symlinks, 0 shared blob OIDs. The four alternates were screened over 106 pairs: **none joins any component**. **A07's buggy SHA *is* T24's fix SHA** — the same commit object — yet the two fixes touch disjoint file sets, so even that does not create a dependency. **Caveat that binds if an alternate is ever substituted:** screen 2 (range overlap) is *not computable* without an artifact and must be re-run then — and range overlap is the exact screen that caught the pair the earlier matrix missed.
+
+**Q-002-R is now fully discharged except for reporting.** Nothing further is owed on it before grading.
 
 **Next actions, in order:** run the nine in schedule order (§3.2) → Q-001 T01–T06 re-run → Q-002 dependency screen → consult on the uniform component rule → S3 → `READY-TO-GRADE.md`.
 

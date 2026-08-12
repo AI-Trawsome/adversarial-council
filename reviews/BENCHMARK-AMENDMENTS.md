@@ -529,6 +529,54 @@ and would inject defect content into a process deliberately limited to mechanica
 may be described after grading as an exploratory interpretation, clearly separated from the
 pre-registered computations.
 
+**Conditions 12 and 13 discharged, 2026-08-12 — no change to the component set.**
+
+*Condition 13, path normalization and renames.* The screen had matched `sourcePath` as a
+**string**, which cannot see a file renamed between two tasks' buggy SHAs. Re-checked:
+**0 renames across all 32 same-repo differing-path pairs.** The decisive test was
+**coexistence** — both paths resolve to blobs in **both** buggy trees in 32 of 32, which
+settles the question independently of any similarity threshold; `-M --find-renames` and
+`--follow` corroborate with 0 hits. Rename-detector controls fire in 9 of 10 repositories; in
+the 10th no rename exists anywhere in a 1400-commit span, so **no fired control could be
+claimed there** and those pairs rest on coexistence alone — flagged rather than glossed.
+Case-folding: 0 fold-only matches; all 25 paths are pure ASCII and already NFC, so byte and
+folded comparison are **provably** equivalent *on this dataset* and a future non-ASCII path
+requires the check re-run rather than inherited. A near-miss worth recording: case-folded
+**basename** matching would have manufactured a false component across three same-repo tasks
+whose paths differ only in directory (whole-file similarity 0.183 and 0.264, copy detection
+negative). Symlinks: 0; all 25 tree entries are mode `100644`, 0 submodules, and **0 pairs
+share a blob OID** in any repository. Every read came from git object storage rather than a
+working tree, so the case-insensitive host filesystem and inode aliasing cannot affect any
+result.
+
+*Condition 12, the four alternates.* All three repositories an alternate needs are cloned —
+checked, not assumed — and every SHA resolves with buggy confirmed as fix's parent. 106 pairs
+screened. **No alternate joins any component; none is dependent on any primary or on another
+alternate.** Screen 1: 0. Screen 3: 6, every same-repo pair. Screen 4 at the visible class: 0.
+Screen 5: 0 in either direction. Cross-repo: 100 pairs, 0 possible ancestry. Pairs tripping
+screen 3 only: A07|T24, A05|T13, A07|T12, A01|A05, A01|T13, A06|T14.
+
+**The commit-distance-zero relationship is A07/T24: A07's buggy SHA *is* T24's fix SHA** — the
+same commit object, verified by SHA equality and by A07's fix having T24's fix as its sole
+parent. A07's buggy tree is byte-for-byte T24's *fixed* tree. This is the self-ancestry edge
+case, and the screen's wrapper distinguishes it from an error. **Even so, screen 4 places it
+at the outermost class** — the two fixes touch disjoint file sets in different subsystems — so
+A07 would not join a component. Five of the six same-repo alternate pairs are materially
+adjacent while none is dependent, confirming on a second sample that adjacency and
+path-sharing are orthogonal.
+
+*The sharpest limit, recorded because it is load-bearing if an alternate is ever used.*
+**Screen 2 is not computable for any alternate** — no artifact means no ranges — and it is
+reported as *not computable*, never as zero. Range overlap is precisely the screen that caught
+the pair the earlier matrix missed, so **it must be re-run for any substituted alternate once
+it has an artifact**. Screen 4 is likewise one-directional for alternates: a primary's fix can
+never reach the visible class in an alternate's window because no window exists, so the
+A07/T24 conclusion rests on file-set disjointness rather than a window comparison, and a future
+A07 slice covering a region T24's fix touched cannot be excluded. Condition 13's checks are
+static at the two buggy SHAs, so a rename-and-rename-back, or a path that was a symlink only at
+an intermediate commit, would leave no trace; nothing suggests either, and neither was searched
+for.
+
 **A superseded matrix, preserved per condition 11.** An earlier cross-task matrix produced as
 a by-product of the T17–T20r contamination audit was sealed into the screen's seat and opened
 only after the screen had frozen and hashed its own independent results. On reconciliation the
