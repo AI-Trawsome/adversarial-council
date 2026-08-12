@@ -64,15 +64,25 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 **Next actions, in order:** run the nine in schedule order (§3.2) → Q-001 T01–T06 re-run → Q-002 dependency screen → consult on the uniform component rule → S3 → `READY-TO-GRADE.md`.
 
-### T17 — Arm A CLOSED, Arm B in flight
+### T17 — CLOSED, both arms
 
-Arm A first (schedule byte 136), **closed**: debate `dbt-2026-08-12-b176f1`, 3 rounds, **7 findings** (codex 6, claude 1), **all 7 `accepted`**, severities 1 critical / 2 high / 3 medium / 1 low, **all `support_level: strong`, 0 unsupported, 0 protocol flags**. Ship line NO-SHIP. `close.err` empty — no disputed finding closed without deciding evidence. Tree intact (`arm_clean_check` treeIntact true, 1 changed file, diff sha `93f59f92…`). **All three Arm A injections passed the A-004 schema gate on the first attempt**; `attempts-r{1,2,3}.json` each show one valid attempt and no rejected payload was archived, so no correction was consumed.
+| arm | debate | rounds | findings | claimants | severities | statuses | ship | flags |
+|---|---|---|---|---|---|---|---|---|
+| A (first) | `dbt-2026-08-12-b176f1` | 3 | 7 | codex 6, claude 1 | 1 crit, 2 high, 3 med, 1 low | accepted 7 | NO-SHIP | 0 |
+| B | `dbt-2026-08-12-85005d` | 1 | 2 | codex 2 | 1 high, 1 med | accepted 2 | NO-SHIP | 0 |
 
-Arm B: debate `dbt-2026-08-12-85005d`. **`arm_context_match` printed CONTEXT MATCH `de37bc62bc6d4575d13a866ff2be4a74b9bc14b6eb58a5189c58558fb4d04fe7`** — both arms' `context.md` byte-identical. Codex CLI verified `0.147.0`. Round 1 Codex critique done: 2 findings, both `strong`, `usageStatus: captured`, `durationMs` 69277. Round-1 defender running.
+- Arm order followed the schedule (A first, byte 136). **`CONTEXT MATCH de37bc62bc6d4575d13a866ff2be4a74b9bc14b6eb58a5189c58558fb4d04fe7`**, re-checked after both closed.
+- **All findings `support_level: strong` in both arms; 0 unsupported; 0 protocol flags.** `close.err` empty in both arms, so nothing closed disputed without deciding evidence.
+- Both arms' trees intact and, notably, **identical** — `arm_clean_check` returns the same diff sha `93f59f92…` and 1 changed file for A and B, so neither arm perturbed the reviewed tree.
+- **All three Arm A injections passed the A-004 gate first attempt**; attempt counters show one valid attempt each and no rejected payload was archived, so no correction was consumed. First task run end to end under the corrected harness with field-type guidance in the brief, and no reviewer encoding error occurred.
+- Codex turn: `usageStatus: captured`, `durationMs` 69277, CLI `0.147.0`.
+- Seat attestations `match: true` with `cwd == seat` for all three Claude seats.
+- **Usage: 19/19 captured, 0 missing** (`_rerun2/claude-usage-T17-T20r.json`), collected against the spawn-time roster with no reconstruction needed.
+- **Cost:** Arm A $32.97, Arm B $2.84 (codex $0.06, 2.2%), **B/A 0.09×**. Running median across 17 tasks **0.33×** against the 3.0× ceiling — **PASS**.
 
-Every T17 seat so far attests `cwd == seat`, `match: true`.
+### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
-**Both T07 and T08 staging re-verified PASS 16/0** under current policy, one changed path and 0 deletions each, so their Q-003 re-runs proceed from the existing finalized staging (condition 3) with fresh working copies (condition 4). No re-staging owed.
+The map contains a `T<NN>-B-critic` entry for **every** task, but **Arm B's critic is Codex, driven by the runner, and never occupies a scratch seat at all.** Those entries are therefore permanently unused by construction, and `T17-B-critic` has no `SEAT-ATTEST.json` for exactly that reason. This is *expected*, and it is **not** the T07 defect: there the map asserted a seat for the Arm B **defender** — a Claude seat that should have existed and did not, while the participant actually ran in shared scratch. Distinguish the two when auditing: an unused `B-critic` entry is structural; an unused `B-def` or any `A-*` entry is a red flag.
 
 **Note on where run state lives:** `/Users/michaeltraw/Dev/council-bench` is **not** a git repository. Only `reviews/` in the marketplace repo is committed; the artifacts, staged repos, scrubbed checkouts, seats and usage payloads live on disk outside version control. "Commit after each task" therefore means committing this file and the batch records.
 
