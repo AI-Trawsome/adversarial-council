@@ -80,6 +80,12 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 - **Usage: 19/19 captured, 0 missing** (`_rerun2/claude-usage-T17-T20r.json`), collected against the spawn-time roster with no reconstruction needed.
 - **Cost:** Arm A $32.97, Arm B $2.84 (codex $0.06, 2.2%), **B/A 0.09×**. Running median across 17 tasks **0.33×** against the 3.0× ceiling — **PASS**.
 
+### T18 — Arm B in flight (scheduled first)
+
+Debate `dbt-2026-08-12-5fb4a6`. §5a gate re-verified before starting (46/0, 69/0). Round 1: Codex filed 2 findings, defender answered both and raised 1 of its own; round 2 Codex turn done. Ledger now 3 findings (codex 2, claude 1), 2 accepted + 1 partially-accepted, all `strong`, 0 flags. Round-2 defender running. Arm A not yet initialized.
+
+**Fidelity variable — T18's project suite is NOT runnable as the project defines it**, and this is the first task in the batch where that is so. The test runner and dev dependencies are absent, installing them where they would be needed is out of bounds under the scratch policy, and the project's test script also runs a build step that would write into the checkout. The defender ran a dependency-free portion of the project's own tests with the interpreter's built-in runner (passed) and did not run the non-vendored external conformance suite. Recorded as an environment fact, not used as evidence either way. **This must be recorded per reviewer, not once per task** — a later seat may reach a different result, as happened on T12.
+
 ### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
 The map contains a `T<NN>-B-critic` entry for **every** task, but **Arm B's critic is Codex, driven by the runner, and never occupies a scratch seat at all.** Those entries are therefore permanently unused by construction, and `T17-B-critic` has no `SEAT-ATTEST.json` for exactly that reason. This is *expected*, and it is **not** the T07 defect: there the map asserted a seat for the Arm B **defender** — a Claude seat that should have existed and did not, while the participant actually ran in shared scratch. Distinguish the two when auditing: an unused `B-critic` entry is structural; an unused `B-def` or any `A-*` entry is a red flag.
