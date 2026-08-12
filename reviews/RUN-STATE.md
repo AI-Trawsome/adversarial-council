@@ -58,13 +58,15 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 **Erratum:** ruling 009 §1 illustrated the drops as T11/T17/T21/T25/T18. That list came from the orchestrator's own query §4, which wrongly assumed a higher task id meant a later fix — false for T01|T17 and T15|T18, because T19/T20 were struck pre-freeze. Consult 010 confirmed **the criterion governs over the illustration**. Every sensitivity computation must be derived from the component table, **never from a hard-coded task list**.
 
-**Still owed on this item:** conditions 12 and 13 — screen the four alternates before any substitution, and run a mechanical path-normalization/rename check (case sensitivity, renames) so a renamed-but-identical file cannot hide a component.
+**Conditions 12 and 13 dispatched** to the same screen agent (it holds the derivation): a mechanical path-normalization/rename check — case folding, `--follow`/`-M` rename detection, symlink and blob-identity resolution — because the screen matched `sourcePath` as a **string**, which would miss a renamed-but-identical file; and the four-alternate screen (A01, A05, A06, A07) against all 25 primaries and each other. **If the rename check yields a new component the sensitivity dataset changes**, and the ruling requires such a component be handled before grading, not after.
 
 **Next actions, in order:** run the nine in schedule order (§3.2) → Q-001 T01–T06 re-run → Q-002 dependency screen → consult on the uniform component rule → S3 → `READY-TO-GRADE.md`.
 
 ### T17 — in flight
 
 Arm A first (schedule byte 136). Debate `dbt-2026-08-12-b176f1`. Round 1 critic spawned; phase `awaiting-critique`. Arm B not yet initialized.
+
+**Attestation boundary — resolved in practice.** Both T17 Arm A seats now carry `SEAT-ATTEST.json` with `match: true` and `cwd == seat`. The critic seat is reused across rounds and wrote its attestation at round 2, so only its round-1 turn predates the requirement. Original note follows.
 
 **Attestation boundary, recorded:** the `SEAT-ATTEST.json` requirement (Q-003 condition 5) was added to the brief templates *after* the T17 Arm A round-1 critic was spawned, so that one seat has no attestation file. It is a pure addition — it changes nothing a reviewer can see or do, and applies symmetrically to both arms — so it does not make T17 asymmetric. For that one seat, seat usage is verified post-hoc from its transcript, which is the same method the condition-12 audit used and the method Q-003 condition 6 now requires anyway. **Every seat spawned from this point on carries the attestation.**
 
