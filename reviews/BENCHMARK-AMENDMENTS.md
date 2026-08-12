@@ -29,6 +29,7 @@ Both amendments were submitted for external ruling before adoption and approved.
 | Q-002 | T10/T11 share a source path; aggregate treatment | **ruled 2026-08-09 — 25-task primary + T11-dropped sensitivity (Option C)** | consult 006 |
 | A-004 | Arm A critic messages are schema-enforced in the harness | approved, implemented 2026-08-11 | consult 007 |
 | Q-003 | T07 Arm B never used a private seat; T07 re-run in both arms | **ruled 2026-08-12 — re-run both arms, B-first** | consult 008 |
+| Q-002-R | Q-002 condition 10: the uniform component-level sensitivity rule | **ruled 2026-08-12 — same-source-path rule, N=20**; drop set corrected by erratum | consult 009, 010 |
 
 Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07. ☑ A-002-E1 — approved 2026-08-08. ☐ Q-001 ☐ Q-002 — ruled 2026-08-09, approval pending.
 
@@ -432,6 +433,112 @@ deleted (acceptable where the listings that actually occurred are captured verba
 mapped-but-missing directories (record as provenance defects; the map is not affirmative
 evidence); trace-free channels (an inherent limit of retrospective isolation audits); and
 T01–T06 being out of scope (already fully ordered for re-run).
+
+---
+
+## Q-002-R — the uniform component-level sensitivity rule (Q-002 condition 10)
+
+**Rule affected:** Q-002's pre-registered sensitivity analysis, and therefore how S1, S2 and
+S3 are reported. **The frozen 25-task computation remains the sole primary analysis and is
+untouched.**
+
+**Sixth and seventh authorizations:** consult exchanges 009 (2026-08-12T13:10Z) and 010
+(2026-08-12T13:12Z). Committed verbatim at
+`reviews/CHATGPT-RULING-025-q002-uniform-component-rule.md`,
+`sha256 09a2ca089457c8f61ba137a6850bbd0f3e1cb6f50c751184da4f16cb1748c4cd`, and
+`reviews/CHATGPT-RULING-026-q002-drop-set-erratum.md`,
+`sha256 63bc98d52b20e4ff4687c8298526d69f02b4e99ac1372192d1ce89a9a79cb341` — each
+byte-identical to the runtime logs `.council/consult/009-…md` and `.council/consult/010-…md`.
+Submissions: `reviews/CLAUDE-QUERY-024-q002-uniform-component-rule.md`
+(`sha256 81ba0c32f54c8e516b175fed6b62d7074e2ccf56d20bae248edabbb6c88ca286`) and
+`reviews/CLAUDE-QUERY-025-q002-drop-set-correction.md`
+(`sha256 7cb6a1b12da116dcf6efb076fb1a79a136350e4ec95a3f6200502bb777ede523`).
+
+**The screen.** The condition-8 dependency screen ran across all 300 pairs (C(25,2)) with a
+validated positive control on every sweep. Screens tripped: identical-file/identity-slice 5;
+overlapping ranges 3; same-repo ancestry 37 (all of them, trivially, in a linear history);
+follow-up/superseding 2 ordered, **0** in any artifact's source file. Cross-repo: 263 pairs,
+**0** trip any screen, tested rather than assumed. **Five dependent components, every one of
+size 2, no task in two of them, fifteen tasks in none:** T10|T11, T01|T17, T07|T21, T09|T25,
+T15|T18.
+
+**Two orchestrator proposals, both REJECTED.**
+
+1. *A visibility-keyed rule* dropping only components where the earlier fix falls inside the
+   later task's artifact ranges (which would have dropped T11 alone, N=24). **Rejected**: its
+   decisive premise is false under the actual construction. Reviewers receive and may navigate
+   the **full scrubbed checkout**, so code outside the staged ranges is contextual review
+   input, not inaccessible material. `SAME-FILE-OUTSIDE-ARTIFACT` cannot be called
+   `NOT-VISIBLE`.
+2. *The `INSIDE-ARTIFACT` refinement as the dependency boundary.* **Rejected as the
+   boundary**, retained as descriptive metadata. Only the **same-file vs elsewhere-in-tree**
+   boundary is accepted. A generic ancestor/descendant relationship, or an earlier fix
+   elsewhere in the repository, does **not** by itself trigger removal — that condition is
+   common in longitudinal repository sampling and would collapse nearly every same-repo pair
+   into one component.
+
+**Approved rule — same-source-path.** For every component whose tasks review the same
+normalized source path in the same repository, retain the member with the **earliest
+ground-truth fix date** and drop all later members **from both arms**. Recompute S1, S2, S3
+from the surviving paired tasks; apply frozen thresholds literally; do not rescale for N.
+**Sensitivity N = 20.**
+
+**Visibility terminology, now binding in the report** — and neither of the first two may be
+labelled `NOT-VISIBLE`:
+
+- `WINDOW-VISIBLE` — inside the staged artifact.
+- `FILE-CONTEXT-VISIBLE` — outside the window but in the same supplied source file.
+- `TREE-CONTEXT-PRESENT` — elsewhere in the scrubbed checkout. **Does not trigger exclusion.**
+
+**Erratum (consult 010), recorded as the ruling requires.** Ruling 009 §1 illustrated the
+effect as dropping **T11, T17, T21, T25, T18**. That list is **wrong and is superseded**. It
+was inherited verbatim from the orchestrator's own query 024 §4, which assumed a higher task
+id meant a later fix — false for two pairs, because T19/T20 were struck pre-freeze and the ids
+are not chronological. **Binding condition 3's criterion governs over the illustration.**
+
+| component | fix dates | retain (earliest) | drop |
+|---|---|---|---|
+| T01 \| T17 | T01 2026-06-02, **T17 2025-07-09** | T17 | **T01** |
+| T07 \| T21 | **T07 2026-02-22**, T21 2026-07-08 | T07 | **T21** |
+| T09 \| T25 | **T09 2026-04-02**, T25 2026-07-17 | T09 | **T25** |
+| T10 \| T11 | **T10 2026-05-07**, T11 2026-07-29 | T10 | **T11** |
+| T15 \| T18 | T15 2026-06-05, **T18 2025-10-26** | T18 | **T15** |
+
+**Corrected drop set: T01, T11, T15, T21, T25.** Retained: T17, T07, T09, T10, T18.
+**T01 — the pilot task — is dropped**; the ruling states plainly that its pilot status
+justifies no exception, since an exception would defeat the uniform rule. Every sensitivity
+computation must be **derived from the component table, never from a hard-coded task list**.
+
+**Binding conditions, all fourteen:** 25-task primary remains sole primary; components built
+on exact normalized same-repo source-path identity; retain earliest fix date; tie-break by
+earlier buggy commit ancestry, then lower pre-registered id, frozen before grading; drop other
+members from both arms and from S1/S2/S3; recompute rather than subtract from totals; apply
+thresholds literally; report primary and sensitivity together with numerators, denominators,
+medians, margins and outcomes; **if they differ, report the benchmark as dependency-sensitive
+and do not select the favourable analysis**; publish the mechanical dependency table with the
+three visibility labels while withholding defect descriptions until grading; preserve the
+earlier erroneous matrices as superseded records and identify downstream material re-derived;
+**screen every alternate before substitution**, handling any that joins an existing component
+before it runs; verify path normalization mechanically including case sensitivity and renames,
+flagging a proven rename separately rather than silently treating it as unrelated; and report
+same-repo/different-file relationships descriptively without using them for removal.
+
+**Semantic supersession: deferred, not required before grading.** The one pair it concerns is
+removed by the rule regardless, so adjudicating it now could not change dataset composition
+and would inject defect content into a process deliberately limited to mechanical facts. It
+may be described after grading as an exploratory interpretation, clearly separated from the
+pre-registered computations.
+
+**A superseded matrix, preserved per condition 11.** An earlier cross-task matrix produced as
+a by-product of the T17–T20r contamination audit was sealed into the screen's seat and opened
+only after the screen had frozen and hashed its own independent results. On reconciliation the
+earlier matrix **missed one range-overlap pair entirely and understated another by ~4×** — its
+figures are exactly what a naive numeric intersection of range sets yields, and the screen
+verified that **no** same-path pair has a byte-identical file between its two buggy SHAs, so
+naive intersection is invalid for all five. Its ancestry list was a strict subset (20 of 37,
+no false positives) with no INSIDE/OUTSIDE/ELSEWHERE refinement. It found nothing the screen
+lacks. Its numbers were already recorded in `RUN-STATE.md`, so **anything downstream of them
+must be re-derived from the screen.**
 
 ---
 

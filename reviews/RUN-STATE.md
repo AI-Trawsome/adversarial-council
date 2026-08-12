@@ -38,16 +38,27 @@
 - **Q-001 condition-12 isolation audit of T07–T11:** still running (seat `Q001-c12-isolation-audit`).
 - **T01–T06 staging re-verified** as still valid under current policy: PASS 16/0 ×6, one changed path and 0 deletions each. **24 fresh Q-001 re-run seats minted** as `T0N-Q001rerun-<arm>-<role>`, verified empty, globally unique. Map now 119 entries.
 
-### Dependency facts already in hand (feed the Q-002 screen; do not re-derive from memory)
+### Dependency screen: DONE and RULED. Supersedes the earlier matrix.
 
-The contamination auditor ran the cross-task matrices over all 25 tasks:
+**The by-product matrix previously recorded here was wrong** — it missed one range-overlap pair and understated another ~4×, because it used a naive numeric intersection of range sets, which is invalid for all five same-path pairs (none has a byte-identical file between its two buggy SHAs). It is preserved as a superseded record in `BENCHMARK-AMENDMENTS.md` §Q-002-R per condition 11. **Do not re-use its numbers for anything.**
 
-- **Same repo + same source path:** T01/T17, T07/T21, T09/T25, T10/T11, T15/T18. No pair shares a buggy SHA.
-- **Overlapping artifact ranges:** **T01/T17 (partial)**, T10/T11 (total). T10/T11 was the named positive control and it fired, validating the method.
-- **Fix already present in the other task's tree** (fix-owner → tree-owner): T17→T01, T17→T21, T07→T21, T07→T01, T07→T08, T08→T21, T18→T15, T18→T04, T18→T10, T18→T11, T09→T25, T02→T25, T16→T25, T24→T12, T06→T22, T05→T10, T05→T11, T05→T15, T04→T11, T10→T11.
-- Going past its brief, the auditor content-tested the five same-path pairs for whether the later artifact **actually displays** the earlier fix: **T10/T11 yes, in full**; the four pairs touching the nine — **no disclosure**.
+The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated positive control on every sweep. Five dependent components, all size 2: **T10|T11, T01|T17, T07|T21, T09|T25, T15|T18**. Cross-repo: 263 pairs, 0 trip any screen.
 
-**This means Q-002 condition 10 is engaged: dependent components exist beyond T10/T11** (T01/T17 overlap the same file's ranges partially). Condition 10 pauses **grading**, not running, and requires one uniform component-level sensitivity rule submitted for review rather than pair-by-pair improvisation. Plan: run the dedicated Q-002 condition-8 screen (seat `Q002-c8-dependency-screen`) to produce the formal matrix independently, **then** consult once with complete data. Do not improvise a rule.
+**Ruled (consults 009 + 010, amendment Q-002-R):** the orchestrator's visibility-keyed rule and its `INSIDE-ARTIFACT` boundary were **rejected** — reviewers navigate the full scrubbed checkout, so same-file-outside-the-window is *not* invisible. The approved rule is **same-source-path: retain the earliest ground-truth fix date, drop later members from both arms.**
+
+| component | retain | drop |
+|---|---|---|
+| T01 \| T17 | T17 | **T01** |
+| T07 \| T21 | T07 | **T21** |
+| T09 \| T25 | T09 | **T25** |
+| T10 \| T11 | T10 | **T11** |
+| T15 \| T18 | T18 | **T15** |
+
+**Sensitivity drop set: T01, T11, T15, T21, T25. N = 20.** The 25-task primary is untouched.
+
+**Erratum:** ruling 009 §1 illustrated the drops as T11/T17/T21/T25/T18. That list came from the orchestrator's own query §4, which wrongly assumed a higher task id meant a later fix — false for T01|T17 and T15|T18, because T19/T20 were struck pre-freeze. Consult 010 confirmed **the criterion governs over the illustration**. Every sensitivity computation must be derived from the component table, **never from a hard-coded task list**.
+
+**Still owed on this item:** conditions 12 and 13 — screen the four alternates before any substitution, and run a mechanical path-normalization/rename check (case sensitivity, renames) so a renamed-but-identical file cannot hide a component.
 
 **Next actions, in order:** run the nine in schedule order (§3.2) → Q-001 T01–T06 re-run → Q-002 dependency screen → consult on the uniform component rule → S3 → `READY-TO-GRADE.md`.
 
