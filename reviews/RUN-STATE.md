@@ -18,10 +18,27 @@
 - **All nine buggy SHAs verified** as their fix commit's parent, dates matching Appendix A. One note: **T20r's fix has author date 2026-07-21 and committer date 2026-07-22**; Appendix A records 2026-07-21. The other eight fixes have identical author and committer dates, so Appendix A's convention is the **author** date and T20r matches under it. The ≥2025-07-01 screen holds under either date. Recorded, not a conflict.
 - **Seats minted:** 46 for this batch (9 constructors + 36 reviewer seats + 1 contamination auditor), plus 2 audit seats (`Q001-c12-isolation-audit`, `Q002-c8-dependency-screen`). All verified empty before use, no duplicate directory anywhere in the map (Q-001 condition 7). Map now holds 95 entries.
 - **`_rerun2/usage-roster-T17-T20r.json` opened**, with each agent id recorded **at spawn time**.
-- **Constructors:** nine spawned in parallel behind the contamination boundary.
-- **Q-001 condition-12 isolation audit of T07–T11:** spawned in parallel; independent of construction.
+- **Construction complete, all nine.** Every constructor reported `OK` and `FULLY CONTAINED`, each with its own syntax check re-run and eight self-verifications.
 
-**Next actions, in order:** finish construction → contamination audit (seat `T17-T20r-contam-audit`) → scrub + audit scrub + stage + audit staging for all nine (§3 steps 4–7) → run in schedule order (§3.2) → Q-001 T01–T06 re-run → Q-002 dependency screen → S3 → `READY-TO-GRADE.md`.
+| task | repo | lines | ranges | slice | syntax check |
+|---|---|---|---|---|---|
+| T17  | aiohttp    | 242 | 3 | subset | `py_compile` PASS |
+| T18  | undici     | 197 | 1 | subset | `node --check` PASS |
+| T21  | aiohttp    |  97 | 1 | subset | `py_compile` PASS |
+| T22  | bullmq     | 358 | 3 | subset | TS compiler API, 0 syntactic diagnostics |
+| T23  | fastapi    |  65 | 2 | subset | `py_compile` PASS |
+| T24  | ioredis    | 315 | 3 | subset | TS compiler API, 0 syntactic diagnostics |
+| T25  | redis-py   | 289 | 2 | subset | `py_compile` PASS |
+| T19r | pino       | 134 | 1 | subset | `node --check` PASS |
+| T20r | sqlalchemy | 134 | 5 | subset | `py_compile` PASS |
+
+- **Scrub PASS 26/0 ×9** (`--forbidden-sha` asserting the fix commit does not resolve inside each checkout), exclusion policy v2, declared limitation present in every manifest.
+- **Staging PASS 16/0 ×9.** Each staged repo shows exactly one changed path, 0 deletions, and an added-line count equal to that task's artifact line count.
+- **Two audits running:** the T17–T20r contamination audit (seat `T17-T20r-contam-audit`) and the Q-001 condition-12 isolation audit of T07–T11 (seat `Q001-c12-isolation-audit`). **No debate may start until the contamination audit returns its containment verdicts** — a slice that omits part of the defect makes the task ungradeable.
+
+**Next actions, in order:** contamination audit returns → run the nine in schedule order (§3.2) → Q-001 T01–T06 re-run → Q-002 dependency screen → S3 → `READY-TO-GRADE.md`.
+
+**Note on where run state lives:** `/Users/michaeltraw/Dev/council-bench` is **not** a git repository. Only `reviews/` in the marketplace repo is committed; the artifacts, staged repos, scrubbed checkouts, seats and usage payloads live on disk outside version control. "Commit after each task" therefore means committing this file and the batch records.
 
 Source clones are all present: `T01`(aiohttp), `_src-redis-py`, `_src-undici`, `_src-bullmq`, `_src-ioredis`, `_src-celery`, `_src-fastify`, `_src-pino` (T19r), `_src-sqlalchemy` (T20r), `_src-fastapi` (T23). **No clone work is owed.**
 
