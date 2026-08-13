@@ -31,6 +31,7 @@ Both amendments were submitted for external ruling before adoption and approved.
 | Q-003 | T07 Arm B never used a private seat; T07 re-run in both arms | **ruled 2026-08-12 — re-run both arms, B-first** | consult 008 |
 | Q-002-R | Q-002 condition 10: the uniform component-level sensitivity rule | **ruled 2026-08-12 — same-source-path rule, N=20**; drop set corrected by erratum | consult 009, 010 |
 | Q-003-E1 | Q-003 condition 8: what counts as a foreign-scratch encounter | **ruled 2026-08-13 — authorized same-debate quotation vs unauthorized exposure/access**; T07 pair retained; retrospective transcript audit ordered | consult 011 |
+| A-005 | Installed published copies of the reviewed project inside reviewer seats | **ruled 2026-08-13 — contamination on reachability; both arms of 12 tasks re-run; harness-managed dependency environment required** | consult 012 |
 
 Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07. ☑ A-002-E1 — approved 2026-08-08. ☐ Q-001 ☐ Q-002 — ruled 2026-08-09, approval pending.
 
@@ -626,6 +627,42 @@ must be re-derived from the screen.**
 
 ---
 
+## A-005 — an installed copy of the reviewed project inside a seat is contamination on reachability
+
+**Rules affected:** A-002 and A-002-E1 (what a reviewer can reach), and §1's arm definition — the arms differ by critic identity and nothing else. Therefore S1 and S2.
+
+**Ninth authorization:** consult exchange 012, 2026-08-13T23:45Z. Committed verbatim at `reviews/CHATGPT-RULING-030-installed-upstream-copies.md`, `sha256 c9d2b284c302438c89d55592a96da0910539436f271f5834c59b39d05f1745ff` — byte-identical to the runtime log `.council/consult/012-2026-08-13T23-45-33-832Z.md`. The submission is `reviews/CLAUDE-QUERY-029-installed-upstream-copies.md`, `sha256 bcb1f5392591cc28dff6a66d80ef5166fe8dd4534bf48233d9dd50458c31386f`.
+
+**The defect, and how late it surfaced.** A-002 makes the fix unreachable inside the checkout by exporting a history-free tree. **It does nothing about the dependency graph.** Reviewers install the project's own test dependencies into their seats, and a test plugin can pull **a published release of the project under review** in as a transitive dependency — putting a second, later copy of the reviewed source on disk beside the reviewer. A sweep of every seat found **18 seats across 12 tasks** with such a copy: A-critic 7, A-def 5, B-def 6.
+
+**This is the first channel in the run that can expose the fix itself.** Every earlier exposure — shared scratch, ledger-quoted paths, the shared `repro/` archive, a changelog filename — was *locating* information that points at a slice reviewers already hold. This one can put fixed source next to them.
+
+**It surfaced only because a reviewer volunteered a disclosure it was not obliged to make** (T08's Arm A defender). Nothing in the per-task §5a checklist looked for it, and the channel has existed since T01.
+
+**Ruled: contamination on reachability, not on proven use.** "Actual use is generally unobservable: imports, searches, test discovery, stack traces, IDE-like tooling, or dependency introspection can expose it without an explicit source-reading command." A participant's evidence that runtime resolution selected the working tree "is useful evidence about that execution, but it does not remove the accessible alternate source."
+
+**Disposition: void and re-run BOTH arms of all twelve tasks** — T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24 — preserved as `VOIDED-INSTALLED-UPSTREAM`, usage excluded from S3 and reported as remediation overhead.
+
+**Both arms, not only the seven with critic exposure.** The orchestrator's query proposed that defender exposure was roughly balanced and therefore did not bias A against B. **Rejected:** defenders raise findings, rebut, change ledger status and support level, and determine convergence, so an exposed defender moves S1 and S2 too; the finalized observation must be a contemporaneous pair under one environment policy; and pairing a remediated arm with an old one repeats the within-pair asymmetry rejected in Q-001 and Q-003. The ruling also declined to condition retention on whether a given installed release actually contained the fix — that "would condition retention on ground-truth proximity and still would not address related later source or tests."
+
+**Report-only treatment was REJECTED.** Disclosure "accompanies remediation; it does not replace it." The report must still publish the per-task and per-role exposure table, the discovery timing, the fact that **presence rather than proven consultation** triggered remediation, the number and cost of voided debates, and the corrected policy.
+
+**Replacement policy — deny, remove, verify (ten binding requirements).** A harness-managed dependency environment built **before either arm begins**, under a frozen policy: derive the reviewed project's normalized distribution names and import roots from the buggy-SHA checkout and package metadata; resolve the test-dependency closure **without** the reviewed project; reject any closure containing a name matching it; after installation remove or fail on any matching distribution **including editable installs, `.egg-link` files, direct-URL installs, local wheels, `.pth` injections, vendored copies and namespace-package contributions**; audit `site-packages`, scripts, package metadata, import paths and module-resolution results before releasing the environment; prove every reviewed-project import resolves only to the scrubbed tree; freeze the environment after audit and re-audit if a participant installs anything further; same policy and resolver inputs for both arms; archive the specification, lock, inventory, audit and resolution proof; keep audit output contamination-safe (names, versions, paths, pass/fail — no comparison against the fix).
+
+**A pin is not enough** — the resolved environment must still pass the self-installation audit — and `--no-deps` is not enough unless the complete closure is supplied and verified. **If a test plugin cannot work without installing the reviewed project, it cannot be used in a reviewer seat under this benchmark:** substitute, exercise the behaviour through the working tree, or record the upstream suite as unavailable and rely on an archived reproduction.
+
+**Mechanical boundary.**
+
+*Voiding — reachability is the trigger, no tool call required.* The environment is contaminated if, while the participant's work is active, it can resolve, enumerate, read, import, execute, search or inspect **any non-working-tree copy or partial copy** of the reviewed project: installed distributions; editable installs or source links; cached wheels or extracted sdists; package-manager build directories; vendored source; namespace-package contributions; generated API/source documentation from another version; compiled modules or source maps from another version; test or example files shipped with another version; package caches reachable from the seat.
+
+*Permitted.* The scrubbed working tree; build outputs produced solely from it during the run; third-party dependencies containing no copy of the reviewed project; package metadata created from the working tree carrying no other-version source or behaviour; and an artifact outside the participant's filesystem and search paths **provided the audit establishes it was not reachable during the run**.
+
+*Required response.* Discovered before participant work — block the seat and rebuild. Discovered after an arm begins — void that arm. Discovered after either arm begins or closes — **re-run both arms**. Identity or reachability uncertain — investigate mechanically, and **if the archive cannot establish absence or inaccessibility, treat the environment as contaminated rather than presume safety.**
+
+**An extended sweep is ordered before grading, and may enlarge the re-run set.** The sweep that found this matched *installed distribution names only*. It must be extended across all retained participant environments and shared caches to cover sdists and wheels, editable links and `.pth` files, build and package-manager caches, **alternate distribution names**, reviewed-project **import roots supplied by another distribution**, and vendored or extracted source copies. "A clean package-name sweep alone is not enough if the same source is present under another packaging mechanism." Any task that meets the reachability rule joins the paired re-run set.
+
+---
+
 ## Sequencing
 
 The order is forced by dependency, not preference:
@@ -652,6 +689,7 @@ Steps 5–7 may run in any order relative to the remaining task batches, but all
 
 **Amended 2026-08-13 by consult 011 (Q-003-E1).** A tenth obligation, ordered before grading:
 
+11. **A-005 remediation (consult 012), ordered before grading and the largest item outstanding:** extend the environment sweep across all retained participant environments and shared caches; build the harness-managed dependency environment under A-005's ten requirements; then **re-run both arms of every affected task** — at minimum T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24, plus any task the extended sweep adds. Prior debates preserved as `VOIDED-INSTALLED-UPSTREAM`, usage excluded from S3 and reported as remediation overhead.
 10. **Transcript-level foreign-seat audit of every retained debate** — T01–T06 (the Q-001 replacements), T07 and T08 (the Q-003 replacements), and all retained T09–T25 — classifying each foreign-seat occurrence as an authorized same-debate quotation or as unauthorized exposure/attempted access, under Q-003-E1 eight binding conditions. An unclassifiable occurrence is unresolved, never presumed authorized.
 
 Step 7 has **already been triggered in substance**: the T17–T20r contamination audit's cross-task matrices found dependent components beyond T10/T11 (T01/T17 partially overlap ranges in the same source file). Q-002 condition 10 therefore binds — grading pauses for **one uniform component-level sensitivity rule submitted for review**, and pair-by-pair improvisation is forbidden. The dedicated screen still runs, so that the rule is proposed against an independently derived matrix rather than against a by-product of another audit.
