@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-12, during the **T17–T20r construction batch**. See §0.
+**Last updated:** 2026-08-12, after **T22 closed both arms**. See §0.
 
 ---
 
@@ -35,7 +35,7 @@
 - **Scrub PASS 26/0 ×9** (`--forbidden-sha` asserting the fix commit does not resolve inside each checkout), exclusion policy v2, declared limitation present in every manifest.
 - **Staging PASS 16/0 ×9.** Each staged repo shows exactly one changed path, 0 deletions, and an added-line count equal to that task's artifact line count.
 - **Contamination audit: ALL CLEAR.** 135/135 checks, **all nine FULLY CONTAINED**, 0 leaks, 0 extra sidecar keys, 0 stray files, no mutated clone. Containment holds under both the literal hunk-header reading and the strict changed-lines-only reading; the auditor applied a stricter both-anchors rule to the seven pure insertions across four tasks and all pass. Every syntax check was re-run by the auditor with a negative control proving the checker fires. Deliverables in seat `T17-T20r-contam-audit`.
-- **Q-001 condition-12 isolation audit of T07–T11:** still running (seat `Q001-c12-isolation-audit`).
+- **Q-001 condition-12 isolation audit of T07–T11: DONE**, ruled, and folded into `BENCHMARK-AMENDMENTS.md` §Q-003 (seat `Q001-c12-isolation-audit`).
 - **T01–T06 staging re-verified** as still valid under current policy: PASS 16/0 ×6, one changed path and 0 deletions each. **24 fresh Q-001 re-run seats minted** as `T0N-Q001rerun-<arm>-<role>`, verified empty, globally unique. Map now 119 entries.
 
 ### Dependency screen: DONE and RULED. Supersedes the earlier matrix.
@@ -111,6 +111,20 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 - **The withdrawal contrast, on one task with identical input.** Arm B's Codex critic used terminal `accept` on its own contested findings **twice**, abandoning both — half its findings never reached the verdict. Arm A's critic instead **reopened both of its contested findings with new evidence**, and the round-2 defender then **accepted all four open findings**, including both reopened ones. Same protocol, same artifact, opposite dispositions. See the briefing-asymmetry entry in §6: only Arm A's critic is told that `accept`-on-own-finding is a trap.
 - **Reviewer conduct.** Arm A seats built repro scripts that **exit non-zero unless the claim reproduces**, with controls that must come back clean — stronger than the scratch policy requires, which asks only for captured output and exit status. A script that always exits 0 satisfies the letter of that and proves nothing.
 
+### T22 — CLOSED, both arms
+
+| arm | debate | rounds | findings | claimants | severities | statuses | ship | flags |
+|---|---|---|---|---|---|---|---|---|
+| B (first) | `dbt-2026-08-12-a80837` | 3 | 3 | codex 1, claude 2 | 1 high, 2 low | accepted 2, **partially-accepted 1** | NO-SHIP | 0 |
+| A | `dbt-2026-08-12-ca8462` | 3 | 7 | codex 6, claude 1 | 2 high, 4 med, 1 low | accepted 6, **partially-accepted 1** | NO-SHIP | 0 |
+
+- Arm order per schedule (B first). **`CONTEXT MATCH 491a599b689a2c95a67cd20b34e35d9f755f43baa6aa658841a6ff96353407bf`**. Both trees intact, same diff sha `5558a54f…`. `close.err` empty in both — each arm closed at the round cap with one unsettled finding carrying deciding evidence. 0 unsupported anywhere; support 2 `strong` + 1 `moderate` (B), 4 `strong` + 3 `moderate` (A).
+- All three Arm A injections **first attempt** (14 of 14 for the batch). All three Arm B Codex turns `usageStatus: captured` (43.1s / 17.8s / 19.3s).
+- **Cost:** Arm A $33.48, Arm B $8.22 (codex $0.29, 3.5%), **B/A 0.25×**. Running median across 20 tasks **0.33×** vs 3.0× — **PASS**. Usage **44/44 captured, 0 missing**.
+- **Fidelity — the first time in the run a "suite not runnable" verdict was overturned mid-debate, by one reviewer's own construction.** Three of the four seats reported the suite unrunnable for two independent reasons: no installed dependencies (and installing into the checkout is forbidden) and no backing datastore on the host. In round 3, Arm B's defender **built the datastore from source inside its own seat** and ran the project's own tests against an installed scratch copy whose reviewed file it verified hash-identical to the frozen tree: one targeted test file passed entirely, and a broader selection passed five of six, the single failure a child-process spawn timeout unrelated to the material. No Arm A seat attempted this. So T22 carries a **within-task, cross-arm fidelity asymmetry that came from reviewer initiative rather than from the environment** — recorded per reviewer, as T12 established, and worth flagging to grading because it is the kind of difference that could be mistaken for an arm effect.
+- **Reviewer conduct.** Two seats independently re-derived the mitigation the T15 `repro/` disclosure recommended but that was deliberately not implemented mid-run: each wrote its artifacts into a **freshly created subdirectory** of the shared per-arm repro archive specifically so it could neither observe nor overwrite the other seat's filenames. The fix the run declined to make to reviewer environments, reviewers made for themselves.
+- Arm A's round-3 critic moved against its own earlier positions on two of three responses, one a full concession, on measurements it ran itself.
+
 ### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
 The map contains a `T<NN>-B-critic` entry for **every** task, but **Arm B's critic is Codex, driven by the runner, and never occupies a scratch seat at all.** Those entries are therefore permanently unused by construction, and `T17-B-critic` has no `SEAT-ATTEST.json` for exactly that reason. This is *expected*, and it is **not** the T07 defect: there the map asserted a seat for the Arm B **defender** — a Claude seat that should have existed and did not, while the participant actually ran in shared scratch. Distinguish the two when auditing: an unused `B-critic` entry is structural; an unused `B-def` or any `A-*` entry is a red flag.
@@ -161,7 +175,8 @@ The operator has authorized running to completion without check-ins, and authori
 | T14 | **closed** | A: 3 rounds, 4 findings (codex 3, claude 1), 2 accepted + 2 partially-accepted, 2 crit/2 high, NO-SHIP. B: 3 rounds, 4 findings (codex 2, claude 2), 3 accepted + 1 partially-accepted, 3 high/1 med, NO-SHIP. 0 flags both arms |
 | T15 | **closed** | First Arm A attempt VOIDED under A-004 (schema asymmetry); restarted with fresh seats. A: 1 round, 3 findings (codex 3), all accepted, 1 high/1 med/1 low, NO-SHIP. B: 1 round, 1 finding (codex 1), accepted, 1 high, NO-SHIP. 0 flags both arms; both trees intact |
 | T16 | **closed** | B: 1 round, 3 findings (codex 3), all accepted, 1 high/2 med, NO-SHIP. A: 3 rounds, 5 findings (codex 5), all accepted, 3 high/2 med, NO-SHIP. 0 flags both arms; both trees intact |
-| T17, T18, T21–T25, T19r, T20r | not started | 9 tasks remaining |
+| T17, T18, T21, T22 | **closed** | see §0 |
+| T23–T25, T19r, T20r | not started | 5 tasks remaining |
 
 ### T12–T16 construction (done, audited, staged)
 
