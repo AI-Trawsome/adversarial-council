@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-13, after **Q-003 and Q-003-E1 were discharged** — every ordered re-run and audit is complete. See §0.
+**Last updated:** 2026-08-13, after **A-005 was ruled** — 13 tasks voided over installed upstream copies and awaiting a paired re-run. See §0.
 
 ---
 
@@ -68,7 +68,13 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 **Q-002-R is now fully discharged except for reporting.** Nothing further is owed on it before grading.
 
-**Next actions, in order:** **Q-001 T01–T06 re-run** (12 conditions) → **Q-003 T07 re-run, B-first** → **Q-003 T08 re-run, A-first** → final S3 → `READY-TO-GRADE.md`. The Q-002 dependency screen and the uniform-component-rule consult are **both done** (see above); nothing further is owed on Q-002 before grading.
+**Next actions, in order — READ THIS FIRST IF RESUMING.** The 25-task run, the Q-001 re-run of T01–T06, the Q-003 re-run of T07/T08 and the Q-003-E1 transcript audit are **all complete**. They are not, however, the end: **amendment A-005 (consult 012) has voided 13 tasks and ordered them re-run in both arms.**
+
+1. ~~Extended A-005 environment sweep~~ — **DONE**, see `reviews/AUDIT-A005-environment-sweep.md`.
+2. **Build the harness-managed dependency environment** under A-005's ten requirements, and freeze it, **before either arm of any re-run begins**.
+3. **Re-run both arms of 13 tasks: T01, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24.** Original arm order per task. Fresh seats. Prior debates preserved as `VOIDED-INSTALLED-UPSTREAM`; their usage excluded from S3 and reported as remediation overhead.
+4. Final S3 → `reviews/READY-TO-GRADE.md`. **Held until step 3 completes.**
+
 
 ### T17 — CLOSED, both arms
 
@@ -275,6 +281,26 @@ Two occurrences could not be classified by the instrument and were **not presume
 **One deviation recorded separately from the classification:** the T12 Arm A round-3 defender wrote that working file into an **orchestrator session scratchpad rather than its own seat**. Non-contaminating — the content was its own extract of the authorized ledger — but writing outside the assigned seat breaches the scratch policy, and it is exactly why the proof had to come from the archive: the file was cleaned up with that session.
 
 **Two limits the report must carry.** The audit tests *paths*, not content — a participant that learned something without a path appearing in its transcript would not be caught, the same inherent limit on retrospective isolation audits consult 008 already recorded. And Arm B's Codex critic writes no participant transcript, so 21 turns sit outside this instrument; it occupies no scratch seat at all, but that is a structural argument, not a measurement.
+
+### A-005 — installed upstream copies: **13 tasks voided, re-run outstanding.** This is the largest item left.
+
+**What it is.** Reviewers install the project's own test dependencies into their seats. A test plugin can pull **a published release of the project under review** in as a transitive dependency, putting a second, later copy of the reviewed source on disk beside the reviewer. **A-002 removes history from the checkout and says nothing about the dependency graph.** This is the first channel in the run that can expose the fix itself rather than merely locate the slice.
+
+**How it surfaced, and how late.** T08's Arm A defender disclosed it unprompted. Nothing in the §5a checklist looked for it and the channel has existed since T01 — which means the same class of gap may exist elsewhere in the seat environment that no reviewer happened to mention.
+
+**Ruled (consult 012, amendment §A-005): contamination on reachability, not on proven use**, because use is generally unobservable — imports, test discovery, stack traces and dependency introspection all expose it without a source-reading command. Report-only treatment was **rejected**. The orchestrator's argument that balanced defender exposure could not bias A against B was **rejected**: defenders raise findings, rebut, move status and support, and determine convergence, so an exposed defender moves S1 and S2 too.
+
+**The set, after the extended sweep and triage — 13 tasks, both arms each:**
+
+**T01, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24.**
+
+The ruling's twelve, plus **T01** which only the extended sweep found (an extracted release in a `uv` cache). **T16, T20r, T22 and T23 were flagged and cleared** — the first three are working-tree copies verified by file-level hashing against both the review repo and the scrubbed buggy tree, the fourth was an instrument defect. Full record in `reviews/AUDIT-A005-environment-sweep.md`.
+
+**Note what this costs.** T07 and T08 are being re-run for the **third** time and T01 for the **third** time; the record must keep the generations distinct — `T07-armA-VOIDED` (pre-isolation), `…-VOIDED-Q003`, and now `…-VOIDED-INSTALLED-UPSTREAM`.
+
+**Before any re-run**, A-005 requires a harness-managed dependency environment, built and frozen ahead of both arms, that resolves each task's test closure **without** the reviewed project, rejects and removes any matching distribution (including editable installs, `.pth` injections, direct-URL installs, local wheels, vendored copies and namespace contributions), and **proves every reviewed-project import resolves only to the scrubbed tree**. A pin is not sufficient. `--no-deps` is not sufficient. If a test plugin cannot work without installing the reviewed project, it cannot be used in a reviewer seat — substitute it, exercise the behaviour through the working tree, or record the suite as unavailable.
+
+**Reviewer briefs must change accordingly** — participants are pointed at the prepared environment and told not to install; if one installs anything further, its environment is re-audited before its work may enter the debate.
 
 ### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
