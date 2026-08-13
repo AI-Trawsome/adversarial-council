@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-13, after **Q-001 was discharged** — T01–T06 re-run in both arms. See §0.
+**Last updated:** 2026-08-13, after **Q-003 and Q-003-E1 were discharged** — every ordered re-run and audit is complete. See §0.
 
 ---
 
@@ -249,6 +249,33 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 **Median B/A across the full 25-task dataset is now 0.33× against the 3.0× ceiling — PASS**, and this is the first time that figure has been computed over a dataset in which T01–T06 are the *replacement* observations. T07 and T08 are still the superseded ones and remain to be re-run under Q-003.
 
+### Q-003 remediation re-run of T07 and T08 — **COMPLETE**, and Q-003-E1 discharged
+
+**Preparation.** All eight prior T07/T08 arm directories and repos renamed to `…-VOIDED-Q003` (condition 1); T07's pre-isolation Arm A run keeps its distinct existing `T07-armA-VOIDED` label, so the record now carries **three** generations of T07 and they are individually identifiable. Fresh opaque seats were already minted and verified empty (condition 4). Condition 9's usage separation needed a **split, not a move**: T07/T08's Claude usage lived inside `claude-usage-T07-T11.json` alongside T09–T11, which are retained — 18 voided rows went to `_rerun2/_voided-usage/`, 20 retained rows stayed in the scanned file, and the Codex halves left the computation with the directory rename. **Condition 11 held by construction:** the briefs are template-generated and the spawn prompts purely procedural, so no replacement participant was told the audit's contents, the exposed filenames, any prior finding, any prior repro material, or the reason for the re-run.
+
+| task | first | A debate | B debate | A rounds/findings | B rounds/findings | ship | flags | context match |
+|---|---|---|---|---|---|---|---|---|
+| T07 | B | `dbt-2026-08-13-ad78df` | `dbt-2026-08-13-fbe24d` | 3 / 3 (codex 3) — accepted 3 | 1 / 1 (codex 1) — accepted 1 | NO-SHIP / NO-SHIP | 0 / 0 | `b24a2fa5…` |
+| T08 | A | `dbt-2026-08-13-608814` | `dbt-2026-08-13-01c948` | 3 / 2 (codex 2) — accepted 2 | 2 / 1 (codex 1) — partially-accepted 1 | NO-SHIP / NO-SHIP | 0 / 0 | `f83daecb…` |
+
+- Both context hashes **equal the staged values recorded in §2** — `b24a2fa5…` for T07 and `f83daecb…` for T08 — which is independent confirmation that condition 3's "same finalized staging" held across the re-run.
+- `close.err` empty in all four; trees intact with A and B returning the same diff sha per task; 0 unsupported; **all 6 Arm A injections first attempt.**
+- **Cost:** T07 Arm A $28.75, Arm B $3.19 (codex 1.9%), **B/A 0.11×**. T08 Arm A $23.21, Arm B $5.30 (codex 4.9%), **B/A 0.23×**. Usage **15/15 captured, 0 missing.**
+- **A harness failure mid-turn, and how it was handled.** T08's Arm A round-2 critic was terminated by an API connection error after it had built four probe scripts and captured their output, but **before** it wrote its message. The ledger was untouched — phase still `awaiting-critique`, round 1 — so no invalid state entered. The **same seat was resumed** rather than replaced: this was a harness fault, not an invalid submission, so it does not consume A-004's one-correction budget, and resuming preserved experimental work that a fresh seat would have had to redo while also giving that seat a second independent attempt at the search. The resume message was purely procedural, as §7 requires. Recorded because the run has not previously had to distinguish a harness fault from a protocol fault.
+- **First `deadlock` close of the run.** T08 Arm B ended at round 2 on the runner's `deadlock` condition — the critic's round-2 message produced no new findings and no status changes, and the defender had no legal target. Distinct from both `all findings settled` and the round cap.
+
+### Q-003-E1 — the ordered transcript-level foreign-seat audit: **NO VOIDING EXPOSURE**
+
+Full record at `reviews/AUDIT-Q003-E1-foreign-seat.md`; machine report at `_rerun2/Q003-E1-foreign-seat-audit.json`.
+
+**174 retained critic and defender participants across all 25 tasks. 0 operations and 0 attempted operations against any foreign seat. 0 scratch-parent listings. 0 foreign paths from another task, arm or voided run. 24 foreign-seat occurrences, all authorized same-debate quotations. 0 unclassifiable after provenance work.** Every participant issued at least 4 tool calls against its own seat (most 20–60), which is the transcript-derived evidence condition 6 demands in place of the seat map.
+
+Two occurrences could not be classified by the instrument and were **not presumed authorized** (condition 7). T14's traced to a harness tool-result spill file, verified mechanically to contain only that debate's two seats and no other task, arm or voided material. T12's traced to a working file since deleted, so provenance came from the archive instead: the participant's transcript shows it created the file itself from `ledger.json` in its own arm repo, and the **archived ledger contains that seat path with three of four surrounding text fragments verbatim**. Both are authorized quotations.
+
+**One deviation recorded separately from the classification:** the T12 Arm A round-3 defender wrote that working file into an **orchestrator session scratchpad rather than its own seat**. Non-contaminating — the content was its own extract of the authorized ledger — but writing outside the assigned seat breaches the scratch policy, and it is exactly why the proof had to come from the archive: the file was cleaned up with that session.
+
+**Two limits the report must carry.** The audit tests *paths*, not content — a participant that learned something without a path appearing in its transcript would not be caught, the same inherent limit on retrospective isolation audits consult 008 already recorded. And Arm B's Codex critic writes no participant transcript, so 21 turns sit outside this instrument; it occupies no scratch seat at all, but that is a structural argument, not a measurement.
+
 ### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
 The map contains a `T<NN>-B-critic` entry for **every** task, but **Arm B's critic is Codex, driven by the runner, and never occupies a scratch seat at all.** Those entries are therefore permanently unused by construction, and `T17-B-critic` has no `SEAT-ATTEST.json` for exactly that reason. This is *expected*, and it is **not** the T07 defect: there the map asserted a seat for the Arm B **defender** — a Claude seat that should have existed and did not, while the participant actually ran in shared scratch. Distinguish the two when auditing: an unused `B-critic` entry is structural; an unused `B-def` or any `A-*` entry is a red flag.
@@ -386,12 +413,17 @@ Order is flexible but **all must complete before grading** (amended Sequencing, 
 1. ~~**T17, T18, T21–T25, T19r, T20r** — the nine, in schedule order.~~ **DONE 2026-08-13.** All nine closed both arms; batch record written at `reviews/BATCH-T17-T20r.md`.
 2. ~~**Q-001 re-run: both arms of T01–T06** under per-seat isolation.~~ **DONE 2026-08-13.** All twelve replacement debates closed; all twelve conditions discharged and evidenced in §0. The twelve superseded debates are preserved as `…-VOIDED-Q001` and their usage is archived under `_rerun2/_voided-usage/`, outside the S3 computation, as remediation overhead.
 3. ~~**Q-001 condition 12: audit T07–T11.**~~ **DONE 2026-08-12.** Result: T07 Arm B `VOID-ARM`; T07 Arm A, T08 Arm A `DEVIATION-RECORDABLE`; T08 Arm B and all of T09–T11 `CLEAN`. See §Q-003.
-4. **NEW — Q-003: re-run both arms of T07, Arm B first**, under twelve binding conditions (`BENCHMARK-AMENDMENTS.md` §Q-003). Preserve the existing pair *and* the pre-isolation Arm A run as `VOIDED`. **Condition 11: the replacement participants must not be told the audit's contents, the exposed filenames, any prior T07 finding or repro material, or the reason T07 is being re-run.** Condition 5 requires mechanical proof each seat is the participant's *actual* working directory — the seat map is not sufficient evidence, and a `SEAT-ATTEST.json` written by each participant is now part of every brief.
-5. **NEW — Q-003 §3: re-run both arms of T08**, Arm A first. The carve-out verification **failed limb (b)**: the seat-map decoder was created and edited *inside the very directory the T08 Arm A defender listed*, and was moved out only **422 seconds after the listing**, in the same orchestrator turn that submitted that participant's rebuttal — the relocation was the remediation for this disclosure. Limb (a) passed (one opaque entry, zero identifying, truncation ruled out by reproducing the collation). The participant demonstrably did **not** use the decoder, but the ruling tests access, not use. **T08 Arm B tested clean on every measure and is re-run only by the conditional** — preserve that distinction in the record. Same twelve Q-003 conditions.
+4. ~~**Q-003: re-run both arms of T07, Arm B first.**~~ **DONE 2026-08-13.** Replacement pair closed; all twelve conditions discharged; only the clean replacement pair is T07 scoring observation. Original text follows for the record.
+
+   OLD: **NEW — Q-003: re-run both arms of T07, Arm B first**, under twelve binding conditions (`BENCHMARK-AMENDMENTS.md` §Q-003). Preserve the existing pair *and* the pre-isolation Arm A run as `VOIDED`. **Condition 11: the replacement participants must not be told the audit's contents, the exposed filenames, any prior T07 finding or repro material, or the reason T07 is being re-run.** Condition 5 requires mechanical proof each seat is the participant's *actual* working directory — the seat map is not sufficient evidence, and a `SEAT-ATTEST.json` written by each participant is now part of every brief.
+5. ~~**Q-003 §3: re-run both arms of T08**, Arm A first.~~ **DONE 2026-08-13.** Replacement pair closed. T08 Arm B own conduct tested clean throughout and it was re-run only by the conditional — the record preserves that distinction. Original text follows for the record.
+
+   OLD: **NEW — Q-003 §3: re-run both arms of T08**, Arm A first. The carve-out verification **failed limb (b)**: the seat-map decoder was created and edited *inside the very directory the T08 Arm A defender listed*, and was moved out only **422 seconds after the listing**, in the same orchestrator turn that submitted that participant's rebuttal — the relocation was the remediation for this disclosure. Limb (a) passed (one opaque entry, zero identifying, truncation ruled out by reproducing the collation). The participant demonstrably did **not** use the decoder, but the ruling tests access, not use. **T08 Arm B tested clean on every measure and is re-run only by the conditional** — preserve that distinction in the record. Same twelve Q-003 conditions.
 
    **Consequence for the standing record:** the claim that the decoding map is held outside the tree is true only from 08:24:53Z on the run date, and false before it. Any inference elsewhere in these files that rests on that premise for T07–T11-era events is unsound and must be re-checked, not reused.
 6. ~~**Q-002 condition 8: dependency screen across all 25 tasks.**~~ **DONE 2026-08-12, and condition 10 discharged.** The dedicated screen ran over all 300 pairs; five size-2 components; the uniform component-level rule was submitted and ruled (consults 009 + 010, amendment §Q-002-R), and conditions 12 and 13 are discharged with no change to the component set. **Sensitivity drop set T01, T11, T15, T21, T25; N = 20**, derived from the component table and never from a hard-coded list. Nothing further is owed on Q-002 before grading except reporting.
-7. **Compute S3** over everything; write `reviews/READY-TO-GRADE.md`.
+7. ~~**Q-003-E1: transcript-level foreign-seat audit of every retained debate.**~~ **DONE 2026-08-13.** 174 participants, all 25 tasks, 0 exposures. See `reviews/AUDIT-Q003-E1-foreign-seat.md`.
+8. **Compute S3** over everything; write `reviews/READY-TO-GRADE.md`. **← the only item left.**
 
 ---
 
