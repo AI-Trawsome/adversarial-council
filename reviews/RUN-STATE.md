@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-13, after **T24 closed both arms**. See §0.
+**Last updated:** 2026-08-13, after **T25 closed both arms**. See §0.
 
 ---
 
@@ -12,7 +12,7 @@
 
 ### In flight (2026-08-13)
 
-**No debate is open.** Construction for all nine is long done; the batch is in **execution**, step 8 of §3. **T17, T18, T21–T24 are closed both arms.** Remaining in the batch: **T25, T19r, T20r**.
+**No debate is open.** Construction for all nine is long done; the batch is in **execution**, step 8 of §3. **T17, T18, T21–T25 are closed both arms.** Remaining in the batch: **T19r, T20r**.
 
 Helper scripts (`armlib.sh`, `mkbrief.mjs`, `roster.mjs`, the three brief templates) were carried forward into the current session scratchpad and repointed at it; they are still **not committed**. Recreate from §3.1 and §7 if lost.
 
@@ -64,7 +64,7 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 **Q-002-R is now fully discharged except for reporting.** Nothing further is owed on it before grading.
 
-**Next actions, in order:** finish **T25, T19r, T20r** in schedule order (§3.2) → **Q-001 T01–T06 re-run** (12 conditions) → **Q-003 T07 re-run, B-first** → **Q-003 T08 re-run, A-first** → final S3 → `READY-TO-GRADE.md`. The Q-002 dependency screen and the uniform-component-rule consult are **both done** (see above); nothing further is owed on Q-002 before grading.
+**Next actions, in order:** finish **T19r, T20r** in schedule order (§3.2) → **Q-001 T01–T06 re-run** (12 conditions) → **Q-003 T07 re-run, B-first** → **Q-003 T08 re-run, A-first** → final S3 → `READY-TO-GRADE.md`. The Q-002 dependency screen and the uniform-component-rule consult are **both done** (see above); nothing further is owed on Q-002 before grading.
 
 ### T17 — CLOSED, both arms
 
@@ -154,6 +154,20 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 - **Cost:** Arm A $5.79, Arm B $3.24 (codex $0.06, 1.7%), **B/A 0.56×**. Running median across 22 tasks **0.35×** vs 3.0× — **PASS**. Usage **53/53 captured, 0 missing**.
 - **Fidelity: T24's suite needs a live backing service and a container-backed cluster, and neither exists here.** All four seats hit it; the tiers that need servers were not run by anyone. Two seats found partial footing and reported it differently — the Arm A critic drove the unit tier from a seat-local dependency set and got 153 passing / 1 failing, the single failure arising inside a test-only third-party package whose version its seat resolved independently of the checkout's declared range; Arm B's defender instead reused the project's own mock-server harness, which runs and passes unmodified. **Neither is the project's suite as the project defines it**, both said so, and no finding rests on either. Recorded per reviewer.
 
+### T25 — CLOSED, both arms
+
+| arm | debate | rounds | findings | claimants | severities | statuses | ship | flags |
+|---|---|---|---|---|---|---|---|---|
+| A (first) | `dbt-2026-08-13-17a435` | 3 | 6 | codex 5, claude 1 | 1 crit, 4 high, 1 med | accepted 5, **withdrawn 1** | NO-SHIP | 0 |
+| B | `dbt-2026-08-13-d94600` | 3 | 3 | codex 2, claude 1 | 3 high | accepted 2, **partially-accepted 1** | NO-SHIP | 0 |
+
+- Arm order per schedule (**A first**, byte 28). **`CONTEXT MATCH 4a394cf69f7aab783beff089a16ec4d4be57d490c41d11a43ac13c3380c1e876`**. Both trees intact, same diff sha `96b16a16…`. `close.err` empty in both — Arm B closed at the round cap with one unsettled finding carrying deciding evidence; Arm A closed on `all findings settled`. 0 unsupported anywhere.
+- All three Arm A injections **first attempt** (20 of 20 for the batch). All three Arm B Codex turns `usageStatus: captured` (40.9s / 24.0s / 19.5s).
+- **Cost:** Arm A $27.11, Arm B $9.34 (codex $0.22, 2.4%), **B/A 0.34×**. Running median across 23 tasks **0.34×** vs 3.0× — **PASS**. Usage **62/62 captured, 0 missing**.
+- **The second `withdrawn` finding of the run — and it is in Arm A, which weakens the T21 inference.** §6's briefing-asymmetry entry recorded that the first withdrawal appeared in Arm B, the arm whose Codex critic is *not* warned that terminal `accept` on one's own contested finding abandons the claim, and noted that Arm A critics had taken the `partial`-with-new-evidence route three times. T25 Arm A's critic, holding that warning, withdrew anyway. **One withdrawal per arm across 23 tasks.** The asymmetry in what the two critics are told is real and still must be reported; the withdrawal counts do not evidence it, and the report must not present them as if they did.
+- **Fidelity: partially runnable, and every seat said so in the same terms** — the unit tier runs, the integration tier cannot, and every failure traces to one absent local service. Four for four agreement, unlike T23 and T24. One seat additionally recorded that the host interpreter is older than the project's declared minimum and installed a newer one under its own seat.
+- **Reviewer conduct — the shared `repro/` surface again, and now three distinct mitigations for it.** T25 Arm A's round-2 critic disclosed that listing the per-arm archive it is *directed* to write into surfaced the opposing seat's filenames; it opened none of them and rebuilt every cross-check from prose. Arm A's defender **filtered its own listing to its own filename prefix**; T22's seats **wrote into a fresh private subdirectory**. Three seats, three independent workarounds for a channel the run deliberately chose not to re-scope mid-flight (see §6). The disposition is unchanged — same task, same arm, same round, symmetric across arms, and the ledger quotes those paths anyway — but the frequency is now the finding: **reviewers keep discovering that the prescribed output location is shared, and keep having to invent a remedy.** Fix it in the next revision by giving every seat its own archive subdirectory.
+
 ### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
 The map contains a `T<NN>-B-critic` entry for **every** task, but **Arm B's critic is Codex, driven by the runner, and never occupies a scratch seat at all.** Those entries are therefore permanently unused by construction, and `T17-B-critic` has no `SEAT-ATTEST.json` for exactly that reason. This is *expected*, and it is **not** the T07 defect: there the map asserted a seat for the Arm B **defender** — a Claude seat that should have existed and did not, while the participant actually ran in shared scratch. Distinguish the two when auditing: an unused `B-critic` entry is structural; an unused `B-def` or any `A-*` entry is a red flag.
@@ -204,8 +218,8 @@ The operator has authorized running to completion without check-ins, and authori
 | T14 | **closed** | A: 3 rounds, 4 findings (codex 3, claude 1), 2 accepted + 2 partially-accepted, 2 crit/2 high, NO-SHIP. B: 3 rounds, 4 findings (codex 2, claude 2), 3 accepted + 1 partially-accepted, 3 high/1 med, NO-SHIP. 0 flags both arms |
 | T15 | **closed** | First Arm A attempt VOIDED under A-004 (schema asymmetry); restarted with fresh seats. A: 1 round, 3 findings (codex 3), all accepted, 1 high/1 med/1 low, NO-SHIP. B: 1 round, 1 finding (codex 1), accepted, 1 high, NO-SHIP. 0 flags both arms; both trees intact |
 | T16 | **closed** | B: 1 round, 3 findings (codex 3), all accepted, 1 high/2 med, NO-SHIP. A: 3 rounds, 5 findings (codex 5), all accepted, 3 high/2 med, NO-SHIP. 0 flags both arms; both trees intact |
-| T17, T18, T21–T24 | **closed** | see §0 |
-| T25, T19r, T20r | not started | 3 tasks remaining |
+| T17, T18, T21–T25 | **closed** | see §0 |
+| T19r, T20r | not started | 2 tasks remaining |
 
 ### T12–T16 construction (done, audited, staged)
 
@@ -337,6 +351,8 @@ Order is flexible but **all must complete before grading** (amended Sequencing, 
   **Concretely observed on T21 Arm B:** the Codex critic used `accept` on its own contested finding, which is terminal — the ledger records it `withdrawn`. The frozen `critique.md` *does* document this ("withdraw it (verdict 'accept'…); withdrawal means you abandon the claim"), so it was informed, and it may well have been deliberate. But Arm A's critic additionally receives an explicit warning that this is a trap and that `partial`-with-new-evidence is the only way to narrow a claim — and Arm A critics have now taken that route three times in this batch. **First `withdrawn` finding in the batch, and it is in the arm without the warning.**
 
   **Not changed mid-run.** Stripping Arm A's brief would break comparability with T01–T18; adding an equivalent to Arm B would mean injecting orchestrator-authored text into the frozen Codex path, which is a larger intervention than the problem. Recorded as a limitation, to be reported alongside the A-002 and A-002-E1 conditionalities and put to the operator before grading.
+
+  > **Updated 2026-08-13 — the T21 observation did not hold up, and the correction belongs next to the claim.** T25 Arm A's critic used terminal `accept` on its own contested finding, producing the run's **second** `withdrawn` finding — in the arm that *does* receive the trap warning. The count is now one per arm across 23 tasks. **The treatment difference itself is unchanged and still must be reported**: Arm A's critic gets protocol instruction Arm B's does not, and Arm B's gets generation-time schema enforcement Arm A's does not. What is withdrawn is the suggestion that withdrawal behaviour evidences it. Two events split one-and-one across two arms is not a signal, and the T21 entry above should be read with this attached.
 
 - **Brief the output contract's field types, not just its shape.** The T15 stumble was a reviewer encoding a confidence *level* where the schema wants a probability. Reviewer briefs should state that `confidence` is a number in [0,1] and that findings carry no keys beyond those the contract names.
 
