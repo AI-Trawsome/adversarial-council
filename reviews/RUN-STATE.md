@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-13, during the **Q-001 remediation re-run of T01–T06** (T01, T02 closed). See §0.
+**Last updated:** 2026-08-13, during the **Q-001 remediation re-run of T01–T06** (T01–T03 closed). See §0.
 
 ---
 
@@ -215,10 +215,14 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 |---|---|---|---|---|---|---|---|---|---|
 | T01 | B | `dbt-2026-08-13-217649` | `dbt-2026-08-13-a2057e` | 3 / 6 (codex 5, claude 1) — accepted 6 | 2 / 2 (codex 1, claude 1) — accepted 2 | NO-SHIP / NO-SHIP | 0 / 0 | `aa0f8a29…` | empty before; **mutually unreachable** after |
 | T02 | B | `dbt-2026-08-13-25f95f` | `dbt-2026-08-13-1d53b8` | 3 / 10 (codex 8, claude 2) — accepted 9, partially-accepted 1 | 2 / 7 (codex 5, claude 2) — accepted 7 | NO-SHIP / NO-SHIP | 0 / 0 | `a7daa3d1…` | empty before; **mutually unreachable** after |
+| T03 | A | `dbt-2026-08-13-40e89d` | `dbt-2026-08-13-b2255e` | 3 / 9 (codex 7, claude 2) — accepted 8, **open 1** | 3 / 7 (codex 2, claude 5) — accepted 6, **open 1** | NO-SHIP / NO-SHIP | 0 / 0 | `9dfb04d2…` | empty before; **mutually unreachable** after |
 
 - **T01.** Both arms closed on `all findings settled`; 0 disputed, 0 unsupported, `close.err` empty in both, both trees intact with the same diff sha `27ee6fd2…`. All three Arm A injections first attempt. Both Codex turns `usageStatus: captured`. Usage **8/8 captured, 0 missing**. **Cost: Arm A $28.43, Arm B $4.35 (codex $0.27, 6.2%), B/A 0.15×.**
 - **Condition 7 verified mechanically after the arms closed, not asserted:** across 30,635 filesystem entries in T01's three seats, **0 symlinks resolving into another seat, 0 shared hard links, and 0 files in any seat containing another seat's absolute path**. Every participant's foreign-scratch declaration was "none encountered" (condition 5); no arm triggered condition 6.
 - **T02.** All 17 findings across both arms `strong`; 0 unsupported; `close.err` empty in both; both trees intact, same diff sha `f51020d5…`. Arm B closed on `all findings settled`; Arm A at the round cap with one unsettled finding. All three Arm A injections first attempt. Both Codex turns captured. Usage **16/16 cumulative captured, 0 missing**. **Cost: Arm A $22.82, Arm B $6.23 (codex $0.32, 5.1%), B/A 0.27×.** Condition 7 post-check across 9,093 entries: **0 / 0 / 0, seats mutually unreachable.** Every foreign-scratch declaration "none encountered".
+- **T03.** `close.err` empty in both; both trees intact, same diff sha `bcefe70b…`; 0 flags. All three Arm A injections first attempt. Both Codex turns captured. Usage **25/25 cumulative captured, 0 missing**. **Cost: Arm A $27.69, Arm B $9.49 (codex $0.33, 3.5%), B/A 0.34×.** Condition 7 post-check across 19,560 entries: **0 / 0 / 0.**
+
+  Two things worth flagging to grading. **First terminal `open` findings in the run, and they appear in both arms** — one each, in each case a finding raised in the final round that the opposing side had no turn left to answer. That is exactly the "closes as unresolved risk" outcome the final-round brief warns about, arrived at by both sides independently on the same task; it is not a protocol error and the runner flagged nothing. **Second, Arm B's Claude defender out-produced the Codex critic 5 findings to 2** — the largest defender-over-critic margin of the run so far, and the third occurrence after T13 and T18. The defender is Claude in *both* arms, so defender-claimed findings are not part of the independent variable; a grader comparing raw finding counts per arm without splitting by claimant would read this backwards.
 - **Condition 10, drift recorded and deliberately not used as an argument.** T01's re-run costs far more on Arm A than the superseded run did ($28.43 vs $3.75) and its B/A ratio moves from 0.84× to 0.15×. The reviewer environment has changed a great deal since T01 first ran — per-seat isolation, the A-004 schema gate, and briefs that now carry the transition table, the field types and the platform hazards — and Arm A's critic is the seat that receives all of that. **This is exactly the drift condition 10 anticipates, and it is recorded rather than treated as a reason to have kept the defective runs.** It does mean the re-run tasks are not cost-comparable with their own superseded versions, which the report must say.
 
 ### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
