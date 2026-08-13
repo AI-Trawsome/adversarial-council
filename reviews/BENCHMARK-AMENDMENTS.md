@@ -30,6 +30,7 @@ Both amendments were submitted for external ruling before adoption and approved.
 | A-004 | Arm A critic messages are schema-enforced in the harness | approved, implemented 2026-08-11 | consult 007 |
 | Q-003 | T07 Arm B never used a private seat; T07 re-run in both arms | **ruled 2026-08-12 — re-run both arms, B-first** | consult 008 |
 | Q-002-R | Q-002 condition 10: the uniform component-level sensitivity rule | **ruled 2026-08-12 — same-source-path rule, N=20**; drop set corrected by erratum | consult 009, 010 |
+| Q-003-E1 | Q-003 condition 8: what counts as a foreign-scratch encounter | **ruled 2026-08-13 — authorized same-debate quotation vs unauthorized exposure/access**; T07 pair retained; retrospective transcript audit ordered | consult 011 |
 
 Michael Traw's approval: ☑ A-001 ☑ A-002 ☑ R-001 — all three approved 2026-08-07. ☑ A-002-E1 — approved 2026-08-08. ☐ Q-001 ☐ Q-002 — ruled 2026-08-09, approval pending.
 
@@ -590,6 +591,41 @@ must be re-derived from the screen.**
 
 ---
 
+## Q-003-E1 — condition 8 turns on provenance and access, not on visibility
+
+**Rule affected:** Q-003 condition 8, and by extension Q-001 condition 6 — therefore the validity of the T07 and T08 replacement pairs and of every retained debate in the run.
+
+**Eighth authorization:** consult exchange 011, 2026-08-13T21:52Z. Committed verbatim at `reviews/CHATGPT-RULING-028-q003-c8-authorized-quotation.md`, `sha256 99b63f1cdb237d16e3e99e2bb40a1786fc0be378b299e7b6b5ee3ed21e77709e` — byte-identical to the runtime log the plugin wrote at `.council/consult/011-2026-08-13T21-52-20-077Z.md`, which is gitignored runtime output. The submission is `reviews/CLAUDE-QUERY-027-q003-c8-ledger-quoted-paths.md`, `sha256 b2d0f63292720e5a7ed08f882f87077f9a68f747285f1275589c015d65bdc0bc`.
+
+**What prompted it.** T07's replacement pair closed clean on every measure except one: a transcript-level audit found that the Arm A round-2 critic had **read** the Arm A defender's seat path. Traced to source, the chain is entirely ordinary — the defender cited its own reproduction path in an evidence field, the harness interpolated the defender's last message into the critic's round-2 prompt, and the critic read the prompt it is required to read. Across all seven T07 participants there were **zero tool calls against any foreign seat** and 17–38 tool calls each against their own. Condition 8 is nevertheless written absolutely ("any intelligible foreign filename or content encountered"), so the orchestrator did not resolve it by its own reading.
+
+**Ruled: condition 8 does not fire; the T07 replacement pair is VALID and retained.** Treating every path quoted in a rebuttal as a voiding event "would make the debate protocol incompatible with evidence that cites archived reproductions." The incident is recorded as **authorized-path-reference, not traversed** — explicitly *not* as absence of exposure.
+
+**The orchestrator's proposed boundary was REJECTED as too narrow.** It offered "traversal, not visibility." The ruling declines it because a participant can be handed an unauthorized listing or file content through a tool result, a harness error, an inherited prompt or a shared cache **without issuing any operation itself**, and that contaminates it just the same. Zero foreign tool calls is not sufficient.
+
+**The approved boundary is authorized same-debate protocol quotation versus unauthorized scratch-derived observation or attempted access.**
+
+*Permitted, does not void* — a foreign seat path appearing only as inert text inside an authorized debate artifact (an opponent's submitted critique or rebuttal, the ledger's faithful quotation of it, a generated prompt faithfully interpolating either, or a protocol record the participant must read), and only when all five hold: the reference originated in the submitting participant's own authorized work; it concerns the same task and debate; no foreign file contents, listing, glob result, metadata or reproduction output rides along beyond what the opponent intentionally submitted as evidence; the receiving participant does not access or attempt to access the path; and the path carries no information from another task, arm or voided run.
+
+*Voiding* — the participant lists, reads, globs, searches, stats, traverses, executes, copies, imports or otherwise operates on a foreign seat or its contents; **or attempts to, even if permission is denied or the path no longer exists**; or receives an unauthorized listing, filename, metadata, file content, reproduction output or cache artifact through **any** channel, requested or not; or receives a foreign path identifying another task, arm, voided run, constructor, auditor or hidden benchmark mechanism outside the authorized same-debate exchange; or follows an authorized reference into the foreign seat.
+
+**Binding conditions, all eight, ordered before grading:**
+
+1. Audit every retained critic and defender transcript for T01–T06.
+2. Trace every foreign-seat occurrence to its source.
+3. Classify authorized debate quotations separately from scratch exposure.
+4. Verify that no participant acted on an authorized foreign path.
+5. Archive a control-plane report — task, arm, role, round, classification, counts — carrying no defect text.
+6. An authorized, untraversed same-debate reference does not invalidate a run.
+7. **Any unclassifiable occurrence remains unresolved and must not be presumed authorized.** Investigate from archived provenance; if provenance cannot establish the exception, apply the voiding rule.
+8. Any confirmed voiding exposure requires re-running both arms of that task under the pair-level remedy.
+
+**Scope: the same audit standard applies to T08's replacement pair and to all retained T09–T25 debates before grading.** The ruling is explicit that this does not void them merely because the protocol can carry path strings — it verifies that each occurrence stayed inside the exception.
+
+**A superseded audit method, preserved per the ruling.** The orchestrator's first condition-6 transcript check compared the harness-recorded `cwd` field on transcript records against the seat path, and reported disagreement for all seven T07 participants — a `FINDING — INVESTIGATE` verdict that was an artifact of the instrument, not of the run. **The check was wrong in its premise:** that field records the session's project directory at spawn, not the shell working directory the participant later moved to. It was replaced by the tool-call analysis described above. The ruling directs that the discarded check and its false finding be preserved as a superseded method with the reason it was invalid, and adds a requirement the replacement must also meet: **it must account for operations that omit absolute paths, resolving relative paths against the effective working directory wherever that can be reconstructed.**
+
+---
+
 ## Sequencing
 
 The order is forced by dependency, not preference:
@@ -613,5 +649,9 @@ Steps 5–7 may run in any order relative to the remaining task batches, but all
 
 8. **Re-run both arms of T07**, Arm B first, under Q-003's twelve conditions. The prior pair and the pre-isolation Arm A run are all preserved as `VOIDED`; only the clean replacement pair is T07's scoring observation. No T07 result counts toward S1/S2/S3 until this completes.
 9. **Establish the T08 Arm A opaque-name carve-out mechanically** — archive the verbatim listing output and prove no reachable mapping decoded the names. If either leg fails, both T08 arms are re-run as well.
+
+**Amended 2026-08-13 by consult 011 (Q-003-E1).** A tenth obligation, ordered before grading:
+
+10. **Transcript-level foreign-seat audit of every retained debate** — T01–T06 (the Q-001 replacements), T07 and T08 (the Q-003 replacements), and all retained T09–T25 — classifying each foreign-seat occurrence as an authorized same-debate quotation or as unauthorized exposure/attempted access, under Q-003-E1 eight binding conditions. An unclassifiable occurrence is unresolved, never presumed authorized.
 
 Step 7 has **already been triggered in substance**: the T17–T20r contamination audit's cross-task matrices found dependent components beyond T10/T11 (T01/T17 partially overlap ranges in the same source file). Q-002 condition 10 therefore binds — grading pauses for **one uniform component-level sensitivity rule submitted for review**, and pair-by-pair improvisation is forbidden. The dedicated screen still runs, so that the rule is proposed against an independently derived matrix rather than against a by-product of another audit.
