@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-13, after the **T17–T20r batch closed complete**. See §0.
+**Last updated:** 2026-08-13, during the **Q-001 remediation re-run of T01–T06** (T01 closed). See §0.
 
 ---
 
@@ -199,6 +199,25 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 - **`rejected` appears as a terminal status for the first time in the run.** Every prior disputed finding closed `partially-accepted` or `withdrawn`. T20r Arm A also produced the run's largest single reopening: the round-2 critic reopened **all five** contested findings at once via `partial`/`reject` with new evidence, taking the ledger from 4 partially-accepted + 1 rejected back to 6 open in one message. The defender then answered all six, and two survived to close.
 - **Contrast worth carrying to grading.** Same artifact, same context hash: Arm B's Codex critic raised **one** finding across three rounds and never added another; Arm A's raised **seven**. That is the widest per-task claimant gap of the run, and it sits on the task with the most runnable suite in the batch — both arms ran the project's own suite to completion (~24,000 tests, exit 0 apart from setup errors from one absent optional type-checker). Neither arm was environment-limited here, so the gap is not a fidelity artifact.
 - **A new exposure class, disclosed by T20r Arm A's round-3 critic: a filename-only recursive search surfaced the names of documentation files the brief puts off-limits as sources.** None was opened and no content was consulted; the seat disclosed it unprompted and put the substantive part inside its JSON message rather than the control plane. **Assessment: non-contaminating, and not a scrub defect.** A-002's scrub removes benchmark records, fix metadata and issue/PR identifiers — a project's own changelog and release notes are ordinary tree content and were never in scope for removal; the brief's "do not read them" rule is what governs, and it held. Recorded because the run has not previously distinguished *seeing a filename* from *reading the file* for this class, and a future revision should say which it means.
+
+### Q-001 remediation re-run of T01–T06 — IN PROGRESS
+
+**Preparation, done once for all six (2026-08-13).**
+
+- **Condition 1 — all twelve superseded debates preserved under an explicit label.** Every `_rerun2/T0N-arm{A,B}` and `T0N-arm{A,B}-repo` renamed to `…-VOIDED-Q001`, 24 directories in total. This is not optional housekeeping: `arm_init` begins with `rm -rf` on exactly those paths, so re-running without renaming first would have destroyed the record the condition requires be kept.
+- **Condition 11 — voided usage removed from the S3 input.** `T01-claude-usage.json`, `T01-usage-roster.json`, `claude-usage-T02-T06.json` and `usage-roster-T02-T06.json` moved to `_rerun2/_voided-usage/`. `compute-s3-cost.mjs` scans only the top level of `_rerun2` for `claude-usage*.json` and matches Codex payloads on `^(T\d+[a-z]*)-armB$`, so both the Claude and the Codex halves of the superseded runs now fall outside the computation by construction rather than by a flag someone has to remember. Verified: T01–T06 vanished from the S3 table on the next run. **That archive is benchmark remediation overhead and is reported separately, never as scoring cost.**
+- **Fresh usage roster** opened at `_rerun2/usage-roster-Q001-T01-T06.json`, agent ids recorded at spawn.
+- **Condition 8** holds by construction — the new seats were minted empty and `arm_init` created fresh log directories, so no reproduction file from a voided run can reach a new seat.
+
+**Per-task results.** Arm order follows each task's original pre-registered draw (condition 2), not a new one.
+
+| task | first | A debate | B debate | A rounds/findings | B rounds/findings | ship | flags | context match | seats |
+|---|---|---|---|---|---|---|---|---|---|
+| T01 | B | `dbt-2026-08-13-217649` | `dbt-2026-08-13-a2057e` | 3 / 6 (codex 5, claude 1) — accepted 6 | 2 / 2 (codex 1, claude 1) — accepted 2 | NO-SHIP / NO-SHIP | 0 / 0 | `aa0f8a29…` | empty before; **mutually unreachable** after |
+
+- **T01.** Both arms closed on `all findings settled`; 0 disputed, 0 unsupported, `close.err` empty in both, both trees intact with the same diff sha `27ee6fd2…`. All three Arm A injections first attempt. Both Codex turns `usageStatus: captured`. Usage **8/8 captured, 0 missing**. **Cost: Arm A $28.43, Arm B $4.35 (codex $0.27, 6.2%), B/A 0.15×.**
+- **Condition 7 verified mechanically after the arms closed, not asserted:** across 30,635 filesystem entries in T01's three seats, **0 symlinks resolving into another seat, 0 shared hard links, and 0 files in any seat containing another seat's absolute path**. Every participant's foreign-scratch declaration was "none encountered" (condition 5); no arm triggered condition 6.
+- **Condition 10, drift recorded and deliberately not used as an argument.** T01's re-run costs far more on Arm A than the superseded run did ($28.43 vs $3.75) and its B/A ratio moves from 0.84× to 0.15×. The reviewer environment has changed a great deal since T01 first ran — per-seat isolation, the A-004 schema gate, and briefs that now carry the transition table, the field types and the platform hazards — and Arm A's critic is the seat that receives all of that. **This is exactly the drift condition 10 anticipates, and it is recorded rather than treated as a reason to have kept the defective runs.** It does mean the re-run tasks are not cost-comparable with their own superseded versions, which the report must say.
 
 ### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
