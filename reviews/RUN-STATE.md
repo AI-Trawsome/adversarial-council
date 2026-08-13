@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-12, after **T22 closed both arms**. See §0.
+**Last updated:** 2026-08-13, after **T23 closed both arms**. See §0.
 
 ---
 
@@ -10,9 +10,11 @@
 
 **T01–T16 are closed, both arms.** The T12–T16 batch is fully closed out — usage collected (31/31 and 11/11 captured, 0 missing), S3 computed, `reviews/BATCH-T12-T16.md` written and committed.
 
-### In flight (2026-08-12)
+### In flight (2026-08-13)
 
-**No debate is open.** The batch is in **construction**, step 2 of §3.
+**No debate is open.** Construction for all nine is long done; the batch is in **execution**, step 8 of §3. **T17, T18, T21, T22, T23 are closed both arms.** Remaining in the batch: **T24, T25, T19r, T20r**.
+
+Helper scripts (`armlib.sh`, `mkbrief.mjs`, `roster.mjs`, the three brief templates) were carried forward into the current session scratchpad and repointed at it; they are still **not committed**. Recreate from §3.1 and §7 if lost.
 
 - **Frozen-invariant gate re-verified** this session: all six frozen hashes OK, plugin at `f976990` and clean, protocol suite **46/0**, harness schema suite **69/0**. The framing `focusSha256` invariant is checked via `arm_cp` only — see the note in §4 about a redundant checker that was written, got it wrong, and has been deleted.
 - **All nine buggy SHAs verified** as their fix commit's parent, dates matching Appendix A. One note: **T20r's fix has author date 2026-07-21 and committer date 2026-07-22**; Appendix A records 2026-07-21. The other eight fixes have identical author and committer dates, so Appendix A's convention is the **author** date and T20r matches under it. The ≥2025-07-01 screen holds under either date. Recorded, not a conflict.
@@ -62,7 +64,7 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 **Q-002-R is now fully discharged except for reporting.** Nothing further is owed on it before grading.
 
-**Next actions, in order:** run the nine in schedule order (§3.2) → Q-001 T01–T06 re-run → Q-002 dependency screen → consult on the uniform component rule → S3 → `READY-TO-GRADE.md`.
+**Next actions, in order:** finish **T24, T25, T19r, T20r** in schedule order (§3.2) → **Q-001 T01–T06 re-run** (12 conditions) → **Q-003 T07 re-run, B-first** → **Q-003 T08 re-run, A-first** → final S3 → `READY-TO-GRADE.md`. The Q-002 dependency screen and the uniform-component-rule consult are **both done** (see above); nothing further is owed on Q-002 before grading.
 
 ### T17 — CLOSED, both arms
 
@@ -125,6 +127,20 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 - **Reviewer conduct.** Two seats independently re-derived the mitigation the T15 `repro/` disclosure recommended but that was deliberately not implemented mid-run: each wrote its artifacts into a **freshly created subdirectory** of the shared per-arm repro archive specifically so it could neither observe nor overwrite the other seat's filenames. The fix the run declined to make to reviewer environments, reviewers made for themselves.
 - Arm A's round-3 critic moved against its own earlier positions on two of three responses, one a full concession, on measurements it ran itself.
 
+### T23 — CLOSED, both arms
+
+| arm | debate | rounds | findings | claimants | severities | statuses | ship | flags |
+|---|---|---|---|---|---|---|---|---|
+| B (first) | `dbt-2026-08-13-3f51c2` | 2 | 3 | codex 2, claude 1 | 1 high, 1 med, 1 low | accepted 3 | NO-SHIP | 0 |
+| A | `dbt-2026-08-13-4ea4d9` | 2 | 5 | codex 4, claude 1 | 3 high, 2 med | accepted 5 | NO-SHIP | 0 |
+
+- Arm order per schedule (B first). **`CONTEXT MATCH 2ba08d34c8eca1e2ebc7b7f1ff069acb09bd07d52b00a395a40684277d8e02ca`**. Both trees intact, same diff sha `2de59ce4…`.
+- **First task in the run where both arms closed early on `all findings settled`** rather than at the round cap — every finding in both arms is `accepted`, 0 disputed, 0 unsupported, all `strong`. `close.err` empty in both.
+- Both Arm A injections **first attempt** (16 of 16 for the batch). Both Arm B Codex turns `usageStatus: captured` (28.6s / 13.3s).
+- **Cost:** Arm A $10.56, Arm B $3.87 (codex $0.22, 5.6%), **B/A 0.37×**. Running median across 21 tasks **0.33×** vs 3.0× — **PASS**. Usage **50/50 captured, 0 missing**.
+- **Fidelity, and a clean example of why it is recorded per reviewer.** T23's suite is runnable — the first such task in this batch — but the four seats did not agree on its result. Two reported it fully green; the Arm A critic reported the same passing count with six failures and one error, every one a `ModuleNotFoundError` for an optional package it had not installed into its seat venv, none touching the module under review. **Same tree, same suite, different seat-local dependency sets.** No finding in either arm rests on it, and each seat recorded it as an environment limit rather than a result.
+- Arm B's round-2 defender filed **zero responses and zero findings**, legally: the ledger held no `open` findings after round 1, and the response-scope rule then permits exactly zero. It recorded in `notes` that it had considered and discharged three candidate issues, two unreachable and one a near-duplicate of a settled finding that the contract forbids re-filing — so the empty message is a decision on the record rather than silence. Third time a defender has used `notes` this way.
+
 ### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
 The map contains a `T<NN>-B-critic` entry for **every** task, but **Arm B's critic is Codex, driven by the runner, and never occupies a scratch seat at all.** Those entries are therefore permanently unused by construction, and `T17-B-critic` has no `SEAT-ATTEST.json` for exactly that reason. This is *expected*, and it is **not** the T07 defect: there the map asserted a seat for the Arm B **defender** — a Claude seat that should have existed and did not, while the participant actually ran in shared scratch. Distinguish the two when auditing: an unused `B-critic` entry is structural; an unused `B-def` or any `A-*` entry is a red flag.
@@ -175,8 +191,8 @@ The operator has authorized running to completion without check-ins, and authori
 | T14 | **closed** | A: 3 rounds, 4 findings (codex 3, claude 1), 2 accepted + 2 partially-accepted, 2 crit/2 high, NO-SHIP. B: 3 rounds, 4 findings (codex 2, claude 2), 3 accepted + 1 partially-accepted, 3 high/1 med, NO-SHIP. 0 flags both arms |
 | T15 | **closed** | First Arm A attempt VOIDED under A-004 (schema asymmetry); restarted with fresh seats. A: 1 round, 3 findings (codex 3), all accepted, 1 high/1 med/1 low, NO-SHIP. B: 1 round, 1 finding (codex 1), accepted, 1 high, NO-SHIP. 0 flags both arms; both trees intact |
 | T16 | **closed** | B: 1 round, 3 findings (codex 3), all accepted, 1 high/2 med, NO-SHIP. A: 3 rounds, 5 findings (codex 5), all accepted, 3 high/2 med, NO-SHIP. 0 flags both arms; both trees intact |
-| T17, T18, T21, T22 | **closed** | see §0 |
-| T23–T25, T19r, T20r | not started | 5 tasks remaining |
+| T17, T18, T21–T23 | **closed** | see §0 |
+| T24, T25, T19r, T20r | not started | 4 tasks remaining |
 
 ### T12–T16 construction (done, audited, staged)
 
