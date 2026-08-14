@@ -222,11 +222,18 @@ function resolveAndInstall(envDir, id) {
   if (id.ecosystem === "node") {
     const pkgPath = path.join(scrubbed, "package.json");
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
-    const dev = { ...(pkg.devDependencies ?? {}) };
+    // Runtime dependencies as well as dev: an environment holding only
+    // devDependencies cannot import the module under review at all, which is
+    // how T06 ended up with both seats reduced to counterfactuals. The
+    // reviewed project itself is still excluded from both sets.
+    const dev = { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) };
     for (const name of Object.keys(dev)) {
       if (id.distNames.includes(norm(name))) { delete dev[name]; log.rejected.push(name); }
     }
+    log.runtimeDeps = Object.keys(pkg.dependencies ?? {}).length;
+    log.devDeps = Object.keys(pkg.devDependencies ?? {}).length;
     fs.mkdirSync(envDir, { recursive: true });
+    log.baselineDistributions = countDists(envDir);
     fs.writeFileSync(path.join(envDir, "package.json"),
       JSON.stringify({ name: `review-env-${task.toLowerCase()}`, private: true, devDependencies: dev }, null, 2) + "\n");
     try {
@@ -236,6 +243,7 @@ function resolveAndInstall(envDir, id) {
     } catch (e) {
       log.notes.push("npm install did not complete: " + String(e.message).slice(0, 200));
     }
+    log.finalDistributions = countDists(envDir);
   } else {
     const venv = path.join(envDir, "venv");
     fs.mkdirSync(envDir, { recursive: true });
