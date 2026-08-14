@@ -61,25 +61,52 @@ function identify() {
   const pyproject = path.join(scrubbed, "pyproject.toml");
   if (fs.existsSync(pyproject)) {
     const body = fs.readFileSync(pyproject, "utf8");
-    const m = /^\s*name\s*=\s*["']([^"']+)["']/m.exec(body);
+    // anchored to [project]/[tool.poetry]: a bare /name =/ matches prose
+    const sect = /(^|\n)\[(project|tool\.poetry)\]([\s\S]*?)(\n\[|$)/.exec(body);
+    const m = /^\s*name\s*=\s*["']([^"']+)["']/m.exec(sect ? sect[3] : body);
     if (m) id.distNames.add(norm(m[1]));
     id.ecosystem ??= "python";
     id.source.push("pyproject.toml");
   }
   const setupCfg = path.join(scrubbed, "setup.cfg");
   if (fs.existsSync(setupCfg)) {
-    const m = /^\s*name\s*=\s*(.+)$/m.exec(fs.readFileSync(setupCfg, "utf8"));
-    if (m) id.distNames.add(norm(m[1].trim()));
-    id.ecosystem ??= "python";
-    id.source.push("setup.cfg");
-  }
-  // import roots: top-level directories that look like the package
-  if (id.ecosystem === "python") {
-    for (const e of fs.readdirSync(scrubbed, { withFileTypes: true })) {
-      if (!e.isDirectory()) continue;
-      if (fs.existsSync(path.join(scrubbed, e.name, "__init__.py"))) id.importRoots.add(norm(e.name));
+    const body = fs.readFileSync(setupCfg, "utf8");
+    const sect = /(^|\n)\[metadata\]([\s\S]*?)(\n\[|$)/.exec(body);
+    if (sect) {
+      const m = /^\s*name\s*=\s*(.+)$/m.exec(sect[2]);
+      if (m) id.distNames.add(norm(m[1].trim()));
     }
+    id.ecosystem ??= "python";
+    id.source.push("setup.cfg[metadata]");
   }
+  const setupPy = path.join(scrubbed, "setup.py");
+  if (fs.existsSync(setupPy)) {
+    const m = /\bname\s*=\s*["']([^"']+)["']/.exec(fs.readFileSync(setupPy, "utf8"));
+    if (m) id.distNames.add(norm(m[1]));
+    id.ecosystem ??= "python";
+    id.source.push("setup.py");
+  }
+  // import roots: top-level packages, plus src-/lib-layout one level down
+  if (id.ecosystem === "python") {
+    const scan = (dir) => {
+      for (const e of (() => { try { return fs.readdirSync(dir, { withFileTypes: true }); } catch { return []; } })()) {
+        if (!e.isDirectory()) continue;
+        if (fs.existsSync(path.join(dir, e.name, "__init__.py"))) id.importRoots.add(norm(e.name));
+      }
+    };
+    scan(scrubbed);
+    scan(path.join(scrubbed, "src"));
+    scan(path.join(scrubbed, "lib"));
+  }
+  if (id.distNames.size === 0) for (const r of id.importRoots) id.distNames.add(r);
+  // Drop generic tokens once a real identity exists. A project's own test
+  // package can be called `t`, and treating that as a distribution name makes
+  // every dependency shipping a `t/` directory look like the project under
+  // review — three false findings on the first T13 build.
+  const GENERIC = new Set(["t", "tests", "test", "src", "lib", "bin", "docs", "examples", "benchmarks"]);
+  const meaningful = [...id.distNames].filter(n => n.length > 2 && !GENERIC.has(n));
+  if (meaningful.length) id.distNames = new Set(meaningful);
+  id.importRoots = new Set([...id.importRoots].filter(r => !GENERIC.has(r) || id.distNames.has(r)));
   return {
     ecosystem: id.ecosystem,
     distNames: [...id.distNames],
@@ -172,6 +199,19 @@ function proveResolution(envDir, id) {
   return proofs;
 }
 
+// distributions present in an environment, used to prove that an install
+// actually added something rather than leaving the interpreter's own baseline
+function countDists(envDir) {
+  const roots = [path.join(envDir, "node_modules")];
+  const lib = path.join(envDir, "venv", "lib");
+  try { for (const d of fs.readdirSync(lib)) roots.push(path.join(lib, d, "site-packages")); } catch {}
+  let n = 0;
+  for (const r of roots) {
+    try { n += fs.readdirSync(r).filter(x => !x.startsWith(".")).length; } catch {}
+  }
+  return n;
+}
+
 /* ---------- requirements 2-3: resolve the closure WITHOUT the project ------- */
 // Requirement 3 is a rejection, not a filter: if the declared test closure
 // contains the project under review, we do not quietly drop it and proceed —
@@ -203,30 +243,57 @@ function resolveAndInstall(envDir, id) {
       execFileSync("python3", ["-m", "venv", venv], { encoding: "utf8", timeout: 300000 });
     } catch (e) { log.notes.push("venv creation failed: " + String(e.message).slice(0, 200)); return log; }
     const pip = path.join(venv, "bin", "pip");
+    log.baselineDistributions = countDists(envDir);
     // declared test requirements, project itself removed
     const candidates = ["requirements/dev.txt", "requirements/test.txt", "requirements-dev.txt", "requirements.txt"];
     const reqFile = candidates.map(c => path.join(scrubbed, c)).find(p => fs.existsSync(p));
-    const specs = [];
+    let specs = [];
     if (reqFile) {
       for (const raw of fs.readFileSync(reqFile, "utf8").split("\n")) {
         const line = raw.trim();
         if (!line || line.startsWith("#") || line.startsWith("-r") || line.startsWith("-e") || line === ".") continue;
-        const name = norm(line.split(/[<>=!\[; ]/)[0]);
+        if (/^(git|https?|file)[+:]/.test(line)) { log.notes.push(`skipped VCS/URL requirement: ${line.slice(0, 60)}`); continue; }
+        const name = norm(line.split(/[<>=!~\[; ]/)[0]);
+        if (!name) continue;
         if (id.distNames.includes(name)) { log.rejected.push(line); continue; }
-        specs.push(line);
+        specs.push(name);
       }
+      specs = [...new Set(specs)];
       log.notes.push(`requirements source: ${path.relative(scrubbed, reqFile)}`);
+      // DECLARED DEVIATION: these task repositories carry pinned versions that
+      // do not exist on the public index (their commit dates are ahead of it),
+      // so the exact declared closure is not installable at all. Pins are
+      // relaxed to names. The environment is therefore the declared dependency
+      // SET at currently-resolvable versions, not the declared closure, and
+      // that is a fidelity variable the report must carry.
+      log.pinsRelaxed = true;
+      log.notes.push("pins relaxed to distribution names: the declared pinned versions are not resolvable on the index");
     } else {
-      specs.push("pytest");
+      specs = ["pytest"];
       log.notes.push("no declared test requirements file; installed a minimal runner only");
     }
+    log.requested = specs.length;
     try {
       execFileSync(pip, ["install", "--disable-pip-version-check", "--no-input", ...specs],
         { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 1800000 });
       log.installed = true;
-    } catch (e) {
-      log.notes.push("pip install did not complete cleanly: " + String(e.message).slice(0, 200));
+    } catch {
+      // one bad name must not cost the whole environment; install individually
+      // and record exactly which specs failed rather than reporting a clean run
+      log.notes.push("batch install failed; falling back to per-requirement install");
+      let ok = 0;
+      log.failedSpecs = [];
+      for (const spec of specs) {
+        try {
+          execFileSync(pip, ["install", "--disable-pip-version-check", "--no-input", spec],
+            { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 600000 });
+          ok++;
+        } catch { log.failedSpecs.push(spec); }
+      }
+      log.installed = ok > 0;
+      log.notes.push(`per-requirement install: ${ok} of ${specs.length} succeeded`);
     }
+    log.finalDistributions = countDists(envDir);
   }
   return log;
 }
@@ -309,7 +376,16 @@ const report = {
   projectImportRoots: id.importRoots,
   identityDerivedFrom: id.identitySource,
   envDir: outDir,
-  install: { installed: install.installed, rejectedFromClosure: install.rejected, notes: install.notes },
+  install: {
+    installed: install.installed,
+    rejectedFromClosure: install.rejected,
+    requested: install.requested ?? null,
+    failedSpecs: install.failedSpecs ?? [],
+    pinsRelaxed: Boolean(install.pinsRelaxed),
+    baselineDistributions: install.baselineDistributions ?? 0,
+    finalDistributions: install.finalDistributions ?? null,
+    notes: install.notes
+  },
   removalAfterInstall: { passes: removal.passes, artifactsRemoved: removal.removed.length, detail: removal.removed },
   entriesAudited: audit.entries,
   unreadableDirs: audit.unreadable,
@@ -323,12 +399,25 @@ const report = {
   // A clean audit counts only if the auditor demonstrably fires, and only if
   // something was actually installed — an empty directory passes every check
   // and proves nothing.
-  verdict: (audit.findings.length === 0 && resolution.every(r => r.ok) &&
-            control.ran && control.fired && audit.distributionsInstalled.length > 0)
+  // The install must demonstrably have ADDED distributions over the bare
+  // interpreter's own baseline. An earlier version of this gate accepted "some
+  // distributions exist", and passed six Python environments whose dependency
+  // install had in fact failed outright — six is what an empty venv ships with.
+  // In --audit-only mode there is no install to measure, so the "something was
+  // actually installed" limb is satisfied by the environment's own populated
+  // inventory instead. Without this split, re-auditing a good environment
+  // reported FAIL and overwrote a correct archived verdict with a wrong one.
+  verdict: (audit.findings.length === 0 && resolution.every(r => r.ok) && control.ran && control.fired &&
+            (auditOnly
+              ? audit.distributionsInstalled.length > 10
+              : install.installed && (install.finalDistributions ?? 0) > (install.baselineDistributions ?? 0)))
     ? "PASS — closure installed, no reachable copy of the project under review, every import root resolves to nothing from the environment alone, and the auditor fired on a planted decoy"
     : "FAIL — environment must not be released to a participant"
 };
+// requirement 9: archive the specification, the resolved inventory, the audit
+// and the module-resolution proof alongside the environment itself
+const archived = { ...report, packageInventory: audit.distributionsInstalled };
 const reportPath = path.join(outDir, "A005-ENV-AUDIT.json");
-fs.writeFileSync(reportPath, JSON.stringify(report, null, 2) + "\n");
+fs.writeFileSync(reportPath, JSON.stringify(archived, null, 2) + "\n");
 console.log(JSON.stringify(report, null, 2));
 process.exit(report.verdict.startsWith("PASS") ? 0 : 1);

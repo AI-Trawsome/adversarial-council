@@ -67,3 +67,35 @@ Each copy was therefore hashed file-by-file against **two** references: the arm'
 - The sweep tests for **copies of the reviewed project**. A dependency that merely *documents* the project's behaviour, or a transitively installed package embedding a fragment of it under an unrecognised name, would not be caught.
 - Import-root identity uses the project's conventional root name. A distribution shipping the reviewed source under an unrelated directory name would evade D7 and D8.
 - Only seats that still exist on disk can be swept. Seats belonging to voided runs were removed when those runs were voided, so this sweep speaks to retained environments.
+
+---
+
+## CORRECTION, same day — the sweep was re-run on derived identities, and the set changed
+
+**The passes above used a repo map I wrote from memory. It was wrong for three tasks.** T02 and T03 are **redis-py**, not aiohttp; **T06 is bullmq**, not ioredis. A sweep that searches a seat for the wrong project cannot find the right one, and can report an unrelated dependency as though it were the project under review — both happened.
+
+It surfaced by accident: the environment builder derives identity from the checkout, and its T06 run printed `bullmq` where the sweep had assumed ioredis.
+
+**Identity is now derived per task from the checkout's own packaging metadata** — `package.json`, `[project]`/`[tool.poetry]` in `pyproject.toml`, `[metadata]` in `setup.cfg`, `setup.py`, plus top-level and `src`/`lib` import roots. Two parsing traps were fixed on the way: an unanchored `name =` in `setup.cfg` matched a prose line and yielded the "distribution" **"bug fixes"**, and `sqlalchemy`'s import root sits under `lib/` and was missed entirely.
+
+### Corrected disposition
+
+| change | task | why |
+|---|---|---|
+| **added** | **T03** | it is redis-py, and an installed `redis` distribution sits in two of its seats. The earlier pass searched it for aiohttp and so found nothing. |
+| **added** | **T01** | extracted release in a `uv` cache (unchanged from the first extended pass) |
+| **evidence withdrawn** | T06 | the `ioredis` directories in its seats are an ordinary dependency — T06 reviews **bullmq**. Its actual bullmq copies are **byte-identical** to its own review tree, 24/24 files across three seats. **On the corrected evidence T06 shows no reachable foreign copy.** |
+
+**T06 is nevertheless retained in the re-run set.** The ruling enumerated it; the enumeration rested on my incorrect table; and a task named in a ruling is not something to drop on my own re-analysis — particularly when keeping it costs two debates and wrongly dropping it costs a contaminated scoring observation. **The report must state plainly that T06's original flag was an identification error of mine**, so that its presence in the set is never read as evidence of an exposure that was never demonstrated.
+
+### Final set — 14 tasks, both arms each
+
+**T01, T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24.**
+
+Cleared on triage against both the review repo and the scrubbed buggy tree: **T16, T20r, T22** (byte-identical or single-file-mutation working-tree copies) and **T23** (a name-prefix false positive). T13 stays in on ground independent of identity: an **installed celery distribution** in its Arm B defender seat.
+
+### A third instrument trap, recorded because it fired twice
+
+Where packaging metadata yields no distribution name the code falls back to the import root — and celery's test package is called **`t`**. Treating `t` as a distribution identity made every dependency shipping a `t/` directory look like the project under review: two bogus "contaminated" rows in the sweep triage, and three false findings in T13's environment audit. Generic tokens are now dropped once a real identity exists.
+
+**All three instrument defects in this audit were over-matching, and every one manufactured contamination rather than concealing it** — the failure direction that wastes re-runs rather than the one that corrupts results. That is the safer direction to fail in, but only if the output is actually checked; each was found by reading a result that looked wrong, not by the instrument reporting a problem with itself.
