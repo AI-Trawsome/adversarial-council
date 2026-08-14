@@ -14,9 +14,15 @@
 
 **No debate is open.** The **T17–T20r batch is complete**: all nine tasks closed in both arms, usage **79/79 captured with 0 missing**, S3 recomputed.
 
-**All 25 task ids now have both arms closed** — but the dataset is **not yet final**. Eight of those tasks are under standing re-run orders and their present debates do not count: **T01–T06** (Q-001) and **T07, T08** (Q-003). Sixteen tasks stand as scoring observations right now; T09–T25 minus none, i.e. T09–T18, T21–T25, T19r, T20r. The S3 figure below is therefore a **running** figure over the current dataset, not the final one.
+**All 25 task ids have been run in both arms, and the dataset is still not final.** Current standing, as of the A-005 re-run:
 
-**Whole-batch mechanical results.** 0 protocol flags in any of the eighteen debates. 0 `unsupported` findings anywhere. Both arms' trees intact on every task, with `arm_clean_check` returning the *same* diff sha for A and B on all nine — so no arm perturbed any reviewed tree. `close.err` empty in all eighteen. Every `arm_context_match` printed `CONTEXT MATCH`. **26 of 26 Arm A injections passed the A-004 schema gate on the first attempt; the one permitted correction was never consumed once in this batch.** Every Arm B Codex turn recorded `usageStatus: captured` — 21 turns, no misses.
+- **11 tasks hold valid scoring observations:** T02, T05, T14, T16, T17, T18, T19r, T20r, T22, T23, T25.
+- **1 task has been re-run clean under A-005:** T01.
+- **13 tasks are VOID and awaiting their A-005 paired re-run:** T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24.
+
+Q-001, Q-003 and Q-003-E1 are all fully discharged. **Every S3 figure in this file is a running figure over whatever dataset existed when it was written, never the final one.**
+
+**Whole-batch mechanical results.** 0 protocol flags in any of the eighteen debates. 0 `unsupported` findings anywhere. Both arms' trees intact on every task, with `arm_clean_check` returning the *same* diff sha for A and B on all nine — so no arm perturbed any reviewed tree. `close.err` empty in all eighteen. Every `arm_context_match` printed `CONTEXT MATCH`. **No Arm A injection was ever rejected in this batch — 26 of 26 accepted as submitted, the one permitted correction never consumed.** (Stated this way deliberately: the harness's `attempt` field is cumulative across debate generations, so "first attempt" is not what it records. See the A-004 counter defect in the A-005 section below.) Every Arm B Codex turn recorded `usageStatus: captured` — 21 turns, no misses.
 
 Helper scripts (`armlib.sh`, `mkbrief.mjs`, `roster.mjs`, the three brief templates) were carried forward into the current session scratchpad and repointed at it; they are still **not committed**. Recreate from §3.1 and §7 if lost.
 
