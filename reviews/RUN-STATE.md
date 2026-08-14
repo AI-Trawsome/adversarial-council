@@ -269,6 +269,7 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 |---|---|---|---|---|---|---|---|---|
 | T07 | B | `dbt-2026-08-13-ad78df` | `dbt-2026-08-13-fbe24d` | 3 / 3 (codex 3) — accepted 3 | 1 / 1 (codex 1) — accepted 1 | NO-SHIP / NO-SHIP | 0 / 0 | `b24a2fa5…` |
 | T08 | A | `dbt-2026-08-13-608814` | `dbt-2026-08-13-01c948` | 3 / 2 (codex 2) — accepted 2 | 2 / 1 (codex 1) — partially-accepted 1 | NO-SHIP / NO-SHIP | 0 / 0 | `f83daecb…` |
+| T03 | A | `dbt-2026-08-14-d8caec` | `dbt-2026-08-14-bc9cac` | 3 / 9 (codex 8, claude 1) — accepted 9 | 3 / 7 (codex 4, claude 3) — accepted 4, partially-accepted 2, withdrawn 1 | NO-SHIP / NO-SHIP | 0 / 0 | `9dfb04d2…` |
 
 - Both context hashes **equal the staged values recorded in §2** — `b24a2fa5…` for T07 and `f83daecb…` for T08 — which is independent confirmation that condition 3's "same finalized staging" held across the re-run.
 - `close.err` empty in all four; trees intact with A and B returning the same diff sha per task; 0 unsupported; **all 6 Arm A injections first attempt.**
@@ -320,6 +321,12 @@ The ruling's twelve, plus **T01** and **T03** which only the extended sweep foun
 
 - Context hash equals the Q-001 generation's, and the trees are intact with the same diff sha in both arms. `close.err` empty. **Cost: Arm A $31.00, Arm B $4.18 (codex 6.7%), B/A 0.13×.** Usage 8/8 captured.
 - **The interpreter mattered, and the first attempt got it wrong.** T01 Arm B was started, ran one round, and was **discarded**: its defender reported the suite unrunnable because the prepared environment had been built on the host default `python3` (3.9.6), below the project's declared `requires-python >= 3.10`. The module under review could not even be imported. All seven Python environments were rebuilt on **Python 3.11.15**, the builder now derives the declared minimum and selects a satisfying interpreter, and T01 restarted from a fresh seat with the used one moved out of `_scratch` entirely. Under the corrected environment every seat reported the suite **runnable and green**, all four agreeing on the same figure. **A remediation that leaves the suite unrunnable buys isolation by destroying fidelity**, and it would have done so silently on all fourteen tasks.
+
+- **T03.** Trees intact, same diff sha `bcefe70b…`, `close.err` empty both arms, 0 flags. **Cost: Arm A $28.63, Arm B $11.95 (codex 3.0%), B/A 0.42×.** Usage 17/17 cumulative captured.
+
+  **A second environment correction, again caught by a reviewer running out of road.** T03's first prepared environment held 18 distributions and its suite would not collect at all — the builder picked the *first* dependency manifest it found, and redis-py keeps its test dependencies in `dev_requirements.txt` at the root while celery splits them across `requirements/dev.txt` (mostly VCS URLs, skipped) and `requirements/test.txt`. The builder now takes the **union of every declared manifest**. T03 went 18 → 77 distributions, T09 22 → 93, T13 14 → 133. T03 Arm A was discarded and restarted from a fresh seat, the used one moved out of `_scratch` entirely.
+
+  **The runner refused a message, for the fourth time in the run.** T03 Arm B's round-3 defender responded to two findings at `partially-accepted` — settled for adjudication from its side, since only the claimant may act on its own contested finding. Nothing entered the ledger and the phase was unchanged. The error was sent back to the same seat verbatim, as the standing rule requires, and the seat re-derived the position independently: **no finding was open at all**, so the legal message was zero responses. It moved its standing positions and deciding evidence into `notes` rather than losing them. A second harness interruption (a 529) also hit this task's round-2 defender and was resumed in place.
 
 ### A-004 defect found during the A-005 re-runs: the attempt counter outlives the debate
 

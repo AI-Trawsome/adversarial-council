@@ -274,11 +274,17 @@ function resolveAndInstall(envDir, id) {
     const pip = path.join(venv, "bin", "pip");
     log.baselineDistributions = countDists(envDir);
     // declared test requirements, project itself removed
-    const candidates = ["requirements/dev.txt", "requirements/test.txt", "requirements-dev.txt", "requirements.txt"];
-    const reqFile = candidates.map(c => path.join(scrubbed, c)).find(p => fs.existsSync(p));
+    // Union of every declared test manifest, not the first one that exists:
+    // redis-py keeps its test deps in dev_requirements.txt at the root, and
+    // celery splits them across requirements/dev.txt (mostly VCS URLs, skipped)
+    // and requirements/test.txt. Picking one file gave those three tasks a
+    // near-empty environment and an unrunnable suite.
+    const candidates = ["requirements/test.txt", "requirements/dev.txt", "dev_requirements.txt",
+                        "requirements-dev.txt", "test-requirements.txt", "requirements.txt"];
+    const reqFiles = candidates.map(c => path.join(scrubbed, c)).filter(p => fs.existsSync(p));
     let specs = [];
-    if (reqFile) {
-      for (const raw of fs.readFileSync(reqFile, "utf8").split("\n")) {
+    if (reqFiles.length) {
+      for (const raw of reqFiles.flatMap(f => fs.readFileSync(f, "utf8").split("\n"))) {
         const line = raw.trim();
         if (!line || line.startsWith("#") || line.startsWith("-r") || line.startsWith("-e") || line === ".") continue;
         if (/^(git|https?|file)[+:]/.test(line)) { log.notes.push(`skipped VCS/URL requirement: ${line.slice(0, 60)}`); continue; }
@@ -288,7 +294,7 @@ function resolveAndInstall(envDir, id) {
         specs.push(name);
       }
       specs = [...new Set(specs)];
-      log.notes.push(`requirements source: ${path.relative(scrubbed, reqFile)}`);
+      log.notes.push("requirements sources: " + reqFiles.map(f => path.relative(scrubbed, f)).join(", "));
       // DECLARED DEVIATION: these task repositories carry pinned versions that
       // do not exist on the public index (their commit dates are ahead of it),
       // so the exact declared closure is not installable at all. Pins are
