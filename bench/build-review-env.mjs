@@ -239,8 +239,37 @@ function resolveAndInstall(envDir, id) {
   } else {
     const venv = path.join(envDir, "venv");
     fs.mkdirSync(envDir, { recursive: true });
+    // Interpreter choice is not incidental. The default `python3` on this host
+    // is older than these projects' declared `requires-python`, so an
+    // environment built on it cannot even import the module under review — the
+    // first T01 build failed exactly that way. Rule: the newest available
+    // interpreter that satisfies the declared minimum, preferring a settled
+    // release over the very newest, and recorded either way.
+    const declared = (() => {
+      for (const f of ["pyproject.toml", "setup.cfg"]) {
+        const p = path.join(scrubbed, f);
+        if (!fs.existsSync(p)) continue;
+        const m = /requires[-_]python\s*=\s*["']?\s*>=?\s*([\d.]+)/i.exec(fs.readFileSync(p, "utf8"));
+        if (m) return m[1];
+      }
+      return null;
+    })();
+    const cmp = (a, b) => { const A = a.split(".").map(Number), B = b.split(".").map(Number);
+      for (let i = 0; i < Math.max(A.length, B.length); i++) { const d = (A[i] ?? 0) - (B[i] ?? 0); if (d) return d; } return 0; };
+    const pyCandidates = ["3.12", "3.11", "3.13", "3.10", "3.14"];
+    let interpreter = null;
+    for (const v of pyCandidates) {
+      if (declared && cmp(v, declared) < 0) continue;
+      try { execFileSync(`python${v}`, ["--version"], { stdio: "ignore" }); interpreter = `python${v}`; break; } catch {}
+    }
+    if (!interpreter) { interpreter = "python3"; log.notes.push("no interpreter satisfying the declared minimum was found; fell back to the default"); }
+    log.interpreter = interpreter;
+    log.declaredMinimum = declared;
     try {
-      execFileSync("python3", ["-m", "venv", venv], { encoding: "utf8", timeout: 300000 });
+      execFileSync(interpreter, ["-m", "venv", venv], { encoding: "utf8", timeout: 300000 });
+      const v = execFileSync(path.join(venv, "bin", "python"), ["--version"], { encoding: "utf8" }).trim();
+      log.interpreterVersion = v;
+      log.notes.push(`interpreter: ${v} (declared minimum ${declared ?? "unspecified"})`);
     } catch (e) { log.notes.push("venv creation failed: " + String(e.message).slice(0, 200)); return log; }
     const pip = path.join(venv, "bin", "pip");
     log.baselineDistributions = countDists(envDir);
@@ -382,6 +411,8 @@ const report = {
     requested: install.requested ?? null,
     failedSpecs: install.failedSpecs ?? [],
     pinsRelaxed: Boolean(install.pinsRelaxed),
+    interpreter: install.interpreterVersion ?? null,
+    declaredMinimumPython: install.declaredMinimum ?? null,
     baselineDistributions: install.baselineDistributions ?? 0,
     finalDistributions: install.finalDistributions ?? null,
     notes: install.notes

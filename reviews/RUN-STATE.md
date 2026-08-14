@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-13, after **A-005 was ruled** — 13 tasks voided over installed upstream copies and awaiting a paired re-run. See §0.
+**Last updated:** 2026-08-13, during the **A-005 paired re-run** — 1 of 14 tasks closed. See §0.
 
 ---
 
@@ -72,7 +72,7 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 1. ~~Extended A-005 environment sweep~~ — **DONE**, see `reviews/AUDIT-A005-environment-sweep.md`.
 2. ~~Build the harness-managed dependency environment~~ — **DONE.** `bench/build-review-env.mjs`; one environment per task at `_env/T<NN>/`, each with an archived `A005-ENV-AUDIT.json`. All 14 PASS: closure installed, every transitively-pulled copy of the reviewed project removed, 0 findings, the reviewed import root resolving to NOT-FOUND from the environment alone, and a planted-decoy control firing.
-3. **Re-run both arms of 14 tasks: T01, T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24.** (T03 added and T06 retained-but-corrected by the identity-derived re-sweep; see the CORRECTION in `reviews/AUDIT-A005-environment-sweep.md`.) **The 14 dependency environments are built, audited and frozen — `_env/T<NN>/`, all 14 PASS.** Original arm order per task. Fresh seats. Prior debates preserved as `VOIDED-INSTALLED-UPSTREAM`; their usage excluded from S3 and reported as remediation overhead.
+3. **IN PROGRESS — re-run both arms of 14 tasks: T01, T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24.** (T03 added and T06 retained-but-corrected by the identity-derived re-sweep; see the CORRECTION in `reviews/AUDIT-A005-environment-sweep.md`.) **The 14 dependency environments are built, audited and frozen — `_env/T<NN>/`, all 14 PASS.** Original arm order per task. Fresh seats. Prior debates preserved as `VOIDED-INSTALLED-UPSTREAM`; their usage excluded from S3 and reported as remediation overhead.
 4. Final S3 → `reviews/READY-TO-GRADE.md`. **Held until step 3 completes.**
 
 
@@ -301,6 +301,27 @@ The ruling's twelve, plus **T01** and **T03** which only the extended sweep foun
 **Before any re-run**, A-005 requires a harness-managed dependency environment, built and frozen ahead of both arms, that resolves each task's test closure **without** the reviewed project, rejects and removes any matching distribution (including editable installs, `.pth` injections, direct-URL installs, local wheels, vendored copies and namespace contributions), and **proves every reviewed-project import resolves only to the scrubbed tree**. A pin is not sufficient. `--no-deps` is not sufficient. If a test plugin cannot work without installing the reviewed project, it cannot be used in a reviewer seat — substitute it, exercise the behaviour through the working tree, or record the suite as unavailable.
 
 **Reviewer briefs must change accordingly** — participants are pointed at the prepared environment and told not to install; if one installs anything further, its environment is re-audited before its work may enter the debate.
+
+### A-005 re-runs — IN PROGRESS. 1 of 14 tasks closed.
+
+**Preparation, done once.** 56 directories preserved as `…-VOIDED-INSTALLED-UPSTREAM`; T01, T07 and T08 now carry three distinguishable voided generations each. Usage was **split, not moved**, across all twelve roster and payload files — each holds a mix of voided and retained tasks, so moving whole files would have dropped retained usage out of S3: 154 invocations archived, 106 retained. 42 fresh seats minted, empty and globally unique. Fresh roster `_rerun2/usage-roster-A005.json`.
+
+**Reviewer briefs changed** for the first time in the run: participants are pointed at the prepared per-task environment and forbidden to install anything at all, with the reason stated plainly. Network is no longer permitted for reviewers, because there is nothing left to install. Scratch copies derived from the working tree — including mutating one for a counterfactual — remain expressly allowed; it is other *versions* that are not.
+
+| task | first | A debate | B debate | A rounds/findings | B rounds/findings | ship | flags | context match |
+|---|---|---|---|---|---|---|---|---|
+| T01 | B | `dbt-2026-08-14-3a6c4b` | `dbt-2026-08-14-31f493` | 3 / 5 (codex 5) — accepted 3, partially-accepted 2 | 2 / 3 (codex 2, claude 1) — accepted 3 | NO-SHIP / NO-SHIP | 0 / 0 | `aa0f8a29…` |
+
+- Context hash equals the Q-001 generation's, and the trees are intact with the same diff sha in both arms. `close.err` empty. **Cost: Arm A $31.00, Arm B $4.18 (codex 6.7%), B/A 0.13×.** Usage 8/8 captured.
+- **The interpreter mattered, and the first attempt got it wrong.** T01 Arm B was started, ran one round, and was **discarded**: its defender reported the suite unrunnable because the prepared environment had been built on the host default `python3` (3.9.6), below the project's declared `requires-python >= 3.10`. The module under review could not even be imported. All seven Python environments were rebuilt on **Python 3.11.15**, the builder now derives the declared minimum and selects a satisfying interpreter, and T01 restarted from a fresh seat with the used one moved out of `_scratch` entirely. Under the corrected environment every seat reported the suite **runnable and green**, all four agreeing on the same figure. **A remediation that leaves the suite unrunnable buys isolation by destroying fidelity**, and it would have done so silently on all fourteen tasks.
+
+### A-004 defect found during the A-005 re-runs: the attempt counter outlives the debate
+
+`bench/inject-armA.mjs` keeps its attempt counter at `_rerun2/_rejected/<task>-arm<arm>/attempts-r<N>.json`, **keyed by task, arm and round only — not by debate id.** `arm_init` wipes the arm's log directory but not that archive, so **a re-run of the same task inherits the previous generation's count.** T01's first A-005 injection reported `attempt: 2` on a first submission, and eight of the remaining thirteen tasks carried counters already sitting at 1.
+
+**Effect:** A-004 guarantees a critic exactly one format correction. A seat starting at attempt 2 has that budget already spent — a genuinely invalid message would abort the critic step immediately instead of bouncing back once. No run has actually been harmed, because no submission has ever been rejected in any re-run, but **the guarantee was not in force and I reported those runs as "first attempt" on a counter that is cumulative.** The accurate claim for earlier batches is *no submission was ever rejected*, which the archives do support.
+
+**Fix:** `arm_init` now moves any existing `_rejected/<task>-arm<arm>/` to `_rejected/_superseded/<task>-arm<arm>-gen<N>` — preserved, never deleted, since it is the record of any rejected payload — so each debate generation starts with a clean budget. `inject-armA.mjs` itself is untouched: it is frozen by hash under A-004 condition 8, and the defect is in how the harness reuses its state across generations, not in the file.
 
 ### A seat-map hygiene note, so it is not later mistaken for a Q-003-class finding
 
