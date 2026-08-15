@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-14, during the **A-005 paired re-run** — 8 of 14 tasks closed (T01, T03, T04, T06, T07, T08, T09, T10). See §0.
+**Last updated:** 2026-08-14, during the **A-005 paired re-run** — 9 of 14 tasks closed (T01, T03, T04, T06, T07, T08, T09, T10, T11). See §0.
 
 ---
 
@@ -17,8 +17,8 @@
 **All 25 task ids have been run in both arms, and the dataset is still not final.** Current standing, as of the A-005 re-run:
 
 - **11 tasks hold valid scoring observations:** T02, T05, T14, T16, T17, T18, T19r, T20r, T22, T23, T25.
-- **8 tasks have been re-run clean under A-005:** T01, T03, T04, T06, T07, T08, T09, T10.
-- **6 tasks are VOID and awaiting their A-005 paired re-run:** T11, T12, T13, T15, T21, T24.
+- **9 tasks have been re-run clean under A-005:** T01, T03, T04, T06, T07, T08, T09, T10, T11.
+- **5 tasks are VOID and awaiting their A-005 paired re-run:** T12, T13, T15, T21, T24.
 
 **Resuming the toolkit.** `armlib.sh`, `mkbrief.mjs` and the brief templates are **not committed** and were lost with the previous session's scratchpad; they were rebuilt on 2026-08-14 from §3.1 and §7 plus the briefs already on disk. The rebuild is **verified, not assumed**: `mkbrief.mjs` regenerates nine real briefs byte-identically across both roles, both arms and all three rounds, and `arm_clean_check` / `arm_context_match` reproduce the shas already recorded here (`04c798a7…`, `c276376a…`, `3de9928e…`). Anyone resuming again should redo that round-trip check rather than trust a fresh transcription.
 
@@ -80,7 +80,7 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 1. ~~Extended A-005 environment sweep~~ — **DONE**, see `reviews/AUDIT-A005-environment-sweep.md`.
 2. ~~Build the harness-managed dependency environment~~ — **DONE.** `bench/build-review-env.mjs`; one environment per task at `_env/T<NN>/`, each with an archived `A005-ENV-AUDIT.json`. All 14 PASS: closure installed, every transitively-pulled copy of the reviewed project removed, 0 findings, the reviewed import root resolving to NOT-FOUND from the environment alone, and a planted-decoy control firing.
-3. **IN PROGRESS — re-run both arms of 14 tasks: T01, T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24.** **Closed: T01, T03, T04, T06, T07, T08, T09, T10. Outstanding, in schedule order: T11 (A first), T12 (A first), T13 (B first), T15 (A first), T21 (B first), T24 (B first).** (T03 added and T06 retained-but-corrected by the identity-derived re-sweep; see the CORRECTION in `reviews/AUDIT-A005-environment-sweep.md`.) **The 14 dependency environments are built, audited and frozen — `_env/T<NN>/`, all 14 PASS.** Original arm order per task. Fresh seats. Prior debates preserved as `VOIDED-INSTALLED-UPSTREAM`; their usage excluded from S3 and reported as remediation overhead.
+3. **IN PROGRESS — re-run both arms of 14 tasks: T01, T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24.** **Closed: T01, T03, T04, T06, T07, T08, T09, T10, T11. Outstanding, in schedule order: T12 (A first), T13 (B first), T15 (A first), T21 (B first), T24 (B first).** (T03 added and T06 retained-but-corrected by the identity-derived re-sweep; see the CORRECTION in `reviews/AUDIT-A005-environment-sweep.md`.) **The 14 dependency environments are built, audited and frozen — `_env/T<NN>/`, all 14 PASS.** Original arm order per task. Fresh seats. Prior debates preserved as `VOIDED-INSTALLED-UPSTREAM`; their usage excluded from S3 and reported as remediation overhead.
 4. Final S3 → `reviews/READY-TO-GRADE.md`. **Held until step 3 completes.**
 
 
@@ -312,7 +312,7 @@ The ruling's twelve, plus **T01** and **T03** which only the extended sweep foun
 
 **Reviewer briefs must change accordingly** — participants are pointed at the prepared environment and told not to install; if one installs anything further, its environment is re-audited before its work may enter the debate.
 
-### A-005 re-runs — IN PROGRESS. 8 of 14 tasks closed.
+### A-005 re-runs — IN PROGRESS. 9 of 14 tasks closed.
 
 **Preparation, done once.** 56 directories preserved as `…-VOIDED-INSTALLED-UPSTREAM`; T01, T07 and T08 now carry three distinguishable voided generations each. Usage was **split, not moved**, across all twelve roster and payload files — each holds a mix of voided and retained tasks, so moving whole files would have dropped retained usage out of S3: 154 invocations archived, 106 retained. 42 fresh seats minted, empty and globally unique. Fresh roster `_rerun2/usage-roster-A005.json`.
 
@@ -328,6 +328,7 @@ The ruling's twelve, plus **T01** and **T03** which only the extended sweep foun
 | T08 | A | `dbt-2026-08-15-90cbb6` | `dbt-2026-08-15-c058f2` | 3 / 4 (codex 4) — accepted 3, partially-accepted 1 | 3 / 1 (codex 1) — partially-accepted 1 | **NO-SHIP / SHIP WITH FIXES** | 0 / 0 | `f83daecb…` |
 | T09 | B | `dbt-2026-08-15-ed7d60` | `dbt-2026-08-15-9191e6` | 3 / 9 (codex 8, claude 1) — accepted 8, partially-accepted 1 | 3 / 5 (codex 3, claude 2) — accepted 5 | NO-SHIP / NO-SHIP | 0 / 0 | `a753f1fd…` |
 | T10 | B | `dbt-2026-08-15-fb4df6` | `dbt-2026-08-15-f125f8` | 3 / 8 (codex 6, claude 2) — accepted 6, partially-accepted 2 | 1 / 1 (codex 1) — accepted 1 | **NO-SHIP / SHIP WITH FIXES** | 0 / 0 | `6e821794…` |
+| T11 | A | `dbt-2026-08-15-83c91d` | `dbt-2026-08-15-e4cde1` | 2 / 7 (codex 6, claude 1) — accepted 7 | 2 / 3 (codex 2, claude 1) — accepted 3 | NO-SHIP / NO-SHIP | 0 / 0 | `f2af7b68…` |
 
 - Context hash equals the Q-001 generation's, and the trees are intact with the same diff sha in both arms. `close.err` empty. **Cost: Arm A $31.00, Arm B $4.18 (codex 6.7%), B/A 0.13×.** Usage 8/8 captured.
 - **The interpreter mattered, and the first attempt got it wrong.** T01 Arm B was started, ran one round, and was **discarded**: its defender reported the suite unrunnable because the prepared environment had been built on the host default `python3` (3.9.6), below the project's declared `requires-python >= 3.10`. The module under review could not even be imported. All seven Python environments were rebuilt on **Python 3.11.15**, the builder now derives the declared minimum and selects a satisfying interpreter, and T01 restarted from a fresh seat with the used one moved out of `_scratch` entirely. Under the corrected environment every seat reported the suite **runnable and green**, all four agreeing on the same figure. **A remediation that leaves the suite unrunnable buys isolation by destroying fidelity**, and it would have done so silently on all fourteen tasks.
@@ -389,6 +390,18 @@ The ruling's twelve, plus **T01** and **T03** which only the extended sweep foun
   **Fidelity: runnable and green in every seat, with one honest limit.** All four seats ran the project's relevant suites under the prepared environment and all reported them passing — one seat 44/44 across four files, others five suites clean. Arm A's round-1 critic additionally recorded that the project's **complete top-level pipeline could not be run**, because its opening stages generate and build artifacts *into the review repository*, which the scratch policy forbids, and a later stage needs network. It ran the covering subset instead and recorded the rest as an environment limit rather than inferring anything from it. That the suites pass with the defects present is itself substantive here, and one defender said so explicitly in its message rather than in the control plane.
 
   **A validator was available in the prepared environment for the first time.** Two Arm A seats validated their messages against the enforcing draft-07 schema using a standards-compliant validator taken read-only from the prepared environment, rather than hand-checking the schema's constraints as seats on T08 and T09 had to after correctly declining to install one. The A-005 environment giveth as well as taketh away, and which it does is per-task.
+
+- **T11 — both arms settled everything early, and the arms agree.** Trees intact, same diff sha `ef112e58…` in both arms, `close.err` empty in both, 0 flags, 0 unsupported. **`CONTEXT MATCH f2af7b68…`, equal to the staged value in §2.** **Both arms closed at round 2 on `all findings settled`** with every finding `accepted` and 0 disputed — the first task in the re-runs where neither arm reached the round cap. Both Arm A injections valid on attempt 1. Both Arm B Codex turns `usageStatus: captured` (45.1s / 29.6s). Usage 70/70 cumulative captured, 0 missing. **Cost: Arm A $16.79, Arm B $4.74 (codex $0.26, 5.5%), B/A 0.28×.** Running median across 20 tasks **0.28×** — **PASS**.
+
+  **Arm A carries two `critical` findings — the most in any single arm of the run** — against Arm B's one high and two mediums, on a 7-to-3 claimant split. Both arms nonetheless closed NO-SHIP, so this is a severity-and-volume gap without a verdict consequence, unlike T08 and T10.
+
+  **Fidelity: runnable and green in all four seats** (21/21, 30/30, 63/63 reported by different seats on their own scopes), with the same limit T10 recorded — the repository-wide entry point chains a setup step that writes **into the review repository**, which the scratch policy forbids, so each seat ran the covering subset and recorded the rest as a coverage limit rather than inferring from it. Two distinct tasks have now hit that specific collision between the project's build-then-test pipeline and the frozen-tree rule; it is a predictable A-005 interaction and the next revision should name it.
+
+  **Two more probe-integrity self-catches, both found by the seat's own controls.** T11 Arm A's round-2 critic wrote a probe whose socket-scoped counter reported a false negative while silently exercising a different code path — caught by cross-checking two probes that disagreed, corrected, with both variants kept on the record. T11 Arm B's round-1 defender had a probe whose failure mode was **swallowed by the discard path it used to consume output** — caught, rewritten to observe the stream directly, corrected probe and warning both archived. That is four such catches across the re-runs (T04 ×2, T11 ×2), every one self-found. **The standing advice earns its place again: print your resolution, echo your arguments, and give every probe a control that can fail.**
+
+  **A validation self-check caught a real defect before the gate saw it.** T11 Arm A's round-1 defender's own type assertions found an extra key on a finding it had written, and it fixed it before submitting. A-004 measures messages at the boundary; this is the first recorded case of the brief's read-your-file-back instruction stopping a message the validator would otherwise have bounced.
+
+  **Second seat this batch to enumerate its own arm directory.** T11 Arm A's round-2 defender listed the arm output directory it was told to write into — three filenames returned, none opened, disclosed unprompted — after T08 Arm A did the same. Non-contaminating for the reasons T16 established, but **twice in one batch says the brief's wording is not landing**, and it belongs in the next revision beside the per-seat `repro/` subdirectory fix.
 
 ### A-004 defect found during the A-005 re-runs: the attempt counter outlives the debate
 
