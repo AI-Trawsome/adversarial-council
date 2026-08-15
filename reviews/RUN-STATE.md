@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-14, during the **A-005 paired re-run** — 13 of 14 tasks closed (T01, T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21). See §0.
+**Last updated:** 2026-08-15, at the close of the **A-005 paired re-run** — **A-005 COMPLETE, all 14 tasks closed.** The run is finished; `reviews/READY-TO-GRADE.md` is written. See §0.
 
 ---
 
@@ -17,8 +17,8 @@
 **All 25 task ids have been run in both arms, and the dataset is still not final.** Current standing, as of the A-005 re-run:
 
 - **11 tasks hold valid scoring observations:** T02, T05, T14, T16, T17, T18, T19r, T20r, T22, T23, T25.
-- **13 tasks have been re-run clean under A-005:** T01, T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21.
-- **1 task is VOID and awaiting its A-005 paired re-run:** T24.
+- **All 14 A-005 tasks have been re-run clean:** T01, T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24.
+- **0 tasks remain void.** All 25 task ids now hold valid scoring observations.
 
 **Resuming the toolkit.** `armlib.sh`, `mkbrief.mjs` and the brief templates are **not committed** and were lost with the previous session's scratchpad; they were rebuilt on 2026-08-14 from §3.1 and §7 plus the briefs already on disk. The rebuild is **verified, not assumed**: `mkbrief.mjs` regenerates nine real briefs byte-identically across both roles, both arms and all three rounds, and `arm_clean_check` / `arm_context_match` reproduce the shas already recorded here (`04c798a7…`, `c276376a…`, `3de9928e…`). Anyone resuming again should redo that round-trip check rather than trust a fresh transcription.
 
@@ -80,8 +80,8 @@ The dedicated Q-002 condition-8 screen ran over all 300 pairs with a validated p
 
 1. ~~Extended A-005 environment sweep~~ — **DONE**, see `reviews/AUDIT-A005-environment-sweep.md`.
 2. ~~Build the harness-managed dependency environment~~ — **DONE.** `bench/build-review-env.mjs`; one environment per task at `_env/T<NN>/`, each with an archived `A005-ENV-AUDIT.json`. All 14 PASS: closure installed, every transitively-pulled copy of the reviewed project removed, 0 findings, the reviewed import root resolving to NOT-FOUND from the environment alone, and a planted-decoy control firing.
-3. **IN PROGRESS — re-run both arms of 14 tasks: T01, T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24.** **Closed: T01, T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21. Outstanding: T24 (B first).** (T03 added and T06 retained-but-corrected by the identity-derived re-sweep; see the CORRECTION in `reviews/AUDIT-A005-environment-sweep.md`.) **The 14 dependency environments are built, audited and frozen — `_env/T<NN>/`, all 14 PASS.** Original arm order per task. Fresh seats. Prior debates preserved as `VOIDED-INSTALLED-UPSTREAM`; their usage excluded from S3 and reported as remediation overhead.
-4. Final S3 → `reviews/READY-TO-GRADE.md`. **Held until step 3 completes.**
+3. ~~**Re-run both arms of 14 tasks:**~~ **DONE 2026-08-15.** T01, T03, T04, T06, T07, T08, T09, T10, T11, T12, T13, T15, T21, T24.** **ALL CLOSED.** (T03 added and T06 retained-but-corrected by the identity-derived re-sweep; see the CORRECTION in `reviews/AUDIT-A005-environment-sweep.md`.) **The 14 dependency environments are built, audited and frozen — `_env/T<NN>/`, all 14 PASS.** Original arm order per task. Fresh seats. Prior debates preserved as `VOIDED-INSTALLED-UPSTREAM`; their usage excluded from S3 and reported as remediation overhead.
+4. ~~Final S3 → `reviews/READY-TO-GRADE.md`.~~ **DONE 2026-08-15.** Primary N=25 median B/A **0.28×**; sensitivity N=20 median **0.28×**; both PASS against the 3.0× ceiling. `reviews/READY-TO-GRADE.md` written. **Grading has not begun and requires the operator.**
 
 
 ### T17 — CLOSED, both arms
@@ -312,7 +312,7 @@ The ruling's twelve, plus **T01** and **T03** which only the extended sweep foun
 
 **Reviewer briefs must change accordingly** — participants are pointed at the prepared environment and told not to install; if one installs anything further, its environment is re-audited before its work may enter the debate.
 
-### A-005 re-runs — IN PROGRESS. 13 of 14 tasks closed.
+### A-005 re-runs — **COMPLETE. All 14 tasks closed, both arms.**
 
 **Preparation, done once.** 56 directories preserved as `…-VOIDED-INSTALLED-UPSTREAM`; T01, T07 and T08 now carry three distinguishable voided generations each. Usage was **split, not moved**, across all twelve roster and payload files — each holds a mix of voided and retained tasks, so moving whole files would have dropped retained usage out of S3: 154 invocations archived, 106 retained. 42 fresh seats minted, empty and globally unique. Fresh roster `_rerun2/usage-roster-A005.json`.
 
@@ -333,6 +333,7 @@ The ruling's twelve, plus **T01** and **T03** which only the extended sweep foun
 | T13 | B | `dbt-2026-08-15-1cf774` | `dbt-2026-08-15-a440b3` | 3 / 6 (codex 5, claude 1) — accepted 4, partially-accepted 2 | 3 / 4 (codex 2, claude 2) — accepted 2, partially-accepted 1, **open 1** | NO-SHIP / NO-SHIP | 0 / 0 | `b9083bd1…` |
 | T15 | A | `dbt-2026-08-15-87bded` | `dbt-2026-08-15-f4d78a` | 1 / 2 (codex 2) — accepted 2 | 2 / 2 (codex 1, claude 1) — accepted 2 | NO-SHIP / NO-SHIP | 0 / 0 | `d71aa613…` |
 | T21 | B | `dbt-2026-08-15-aabc43` | `dbt-2026-08-15-637006` | 3 / 4 (codex 3, claude 1) — accepted 3, partially-accepted 1 | 2 / 1 (codex 1) — accepted 1 | NO-SHIP / NO-SHIP | 0 / 0 | `ebdf80b4…` |
+| T24 | B | `dbt-2026-08-15-e6c7fe` | `dbt-2026-08-15-8dbee3` | 3 / 6 (codex 5, claude 1) — accepted 5, **open 1** | 2 / 3 (codex 2, claude 1) — accepted 3 | NO-SHIP / NO-SHIP | 0 / 0 | `839535c6…` |
 
 - Context hash equals the Q-001 generation's, and the trees are intact with the same diff sha in both arms. `close.err` empty. **Cost: Arm A $31.00, Arm B $4.18 (codex 6.7%), B/A 0.13×.** Usage 8/8 captured.
 - **The interpreter mattered, and the first attempt got it wrong.** T01 Arm B was started, ran one round, and was **discarded**: its defender reported the suite unrunnable because the prepared environment had been built on the host default `python3` (3.9.6), below the project's declared `requires-python >= 3.10`. The module under review could not even be imported. All seven Python environments were rebuilt on **Python 3.11.15**, the builder now derives the declared minimum and selects a satisfying interpreter, and T01 restarted from a fresh seat with the used one moved out of `_scratch` entirely. Under the corrected environment every seat reported the suite **runnable and green**, all four agreeing on the same figure. **A remediation that leaves the suite unrunnable buys isolation by destroying fidelity**, and it would have done so silently on all fourteen tasks.
@@ -452,6 +453,16 @@ The ruling's twelve, plus **T01** and **T03** which only the extended sweep foun
   **The zsh word-splitting hazard fired for the sixth time — and failed loudly.** T21 Arm A's round-2 critic had a driver draft turn every probe into a hard error rather than a silent false negative, because the seat had already instrumented per-probe exit statuses. Rewritten with arrays. **Every prior occurrence of this hazard produced probes that reported survival; this is the first where the seat's own instrumentation made the failure self-announcing.**
 
   **A fourth mitigation for the shared `repro/` surface, and the first that prevents rather than reacts.** T21 Arm A's round-1 defender **prefixed its filenames so they could not collide** and wrote only to the paths the brief named, without enumerating the directory — where T22 used a private subdirectory, T25 filtered its own listing, and T07 disclosed a foreign artifact after finding it. Reviewers have now invented four distinct remedies for a channel the run declined to re-scope mid-flight.
+
+- **T24 — the final debate of the A-005 re-runs.** Trees intact, same diff sha `f6d796fe…` in both arms — **identical to T24's pre-A-005 generation** — `close.err` empty in both, 0 flags, 0 unsupported, **all 9 findings across both arms `strong`**. **`CONTEXT MATCH 839535c6…`, equal to T24's original generation.** All three Arm A injections valid on attempt 1, counter superseded to `gen1`. Both Arm B Codex turns `usageStatus: captured` (47.8s / 16.2s). Usage **108/108 cumulative captured, 0 missing**. **Cost: Arm A $28.95, Arm B $6.21 (codex $0.13, 2.1%), B/A 0.21×.**
+
+  Arm A closed at the round cap with a terminal `open` finding — the run's **fourth** — and 6 findings all at `high`. Arm B settled at round 2 on 3 findings. Both NO-SHIP.
+
+  **"Suite not collectible" resolved to "one helper is not satisfiable here", independently and on a second project.** Three T24 seats converged on the same precise diagnosis: **a single test helper installs a global per-test teardown hook requiring a live server**, so every test times out and the run aborts at the first file — but excluding just that helper, the mock-server files run normally and the subsystem's functional file completes. T12's seats reached the same shape of conclusion on a different project. **Two tasks now show that file-level collection failure does not imply case-level unavailability**, which is the finer-grained reading §T12 recommended and this confirms.
+
+  **Control discipline peaked here.** T24 Arm A's round-1 critic built its archive with **five defect cases and two controls, each control differing from its paired defect case in exactly one input** — the strongest control construction recorded in the run. Its round-2 defender hit the harness backgrounding hazard and handled it exactly as briefed: killed the command and re-ran capturing locally rather than reading the mirror.
+
+  **The collision-prevention practice propagated.** Both T24 Arm A seats wrote **uniquely-prefixed filenames into the shared archive without enumerating it**, the approach T21's defender introduced one task earlier. Two consecutive tasks, four seats, arriving at prevention rather than reaction without the brief telling them to.
 
 ### A participant reported writing a message it had not written (T12 Arm A, round 3, 2026-08-15)
 
@@ -618,7 +629,7 @@ Order is flexible but **all must complete before grading** (amended Sequencing, 
    **Consequence for the standing record:** the claim that the decoding map is held outside the tree is true only from 08:24:53Z on the run date, and false before it. Any inference elsewhere in these files that rests on that premise for T07–T11-era events is unsound and must be re-checked, not reused.
 6. ~~**Q-002 condition 8: dependency screen across all 25 tasks.**~~ **DONE 2026-08-12, and condition 10 discharged.** The dedicated screen ran over all 300 pairs; five size-2 components; the uniform component-level rule was submitted and ruled (consults 009 + 010, amendment §Q-002-R), and conditions 12 and 13 are discharged with no change to the component set. **Sensitivity drop set T01, T11, T15, T21, T25; N = 20**, derived from the component table and never from a hard-coded list. Nothing further is owed on Q-002 before grading except reporting.
 7. ~~**Q-003-E1: transcript-level foreign-seat audit of every retained debate.**~~ **DONE 2026-08-13.** 174 participants, all 25 tasks, 0 exposures. See `reviews/AUDIT-Q003-E1-foreign-seat.md`.
-8. **Compute S3** over everything; write `reviews/READY-TO-GRADE.md`. **← the only item left.**
+8. ~~**Compute S3** over everything; write `reviews/READY-TO-GRADE.md`.~~ **DONE 2026-08-15. Nothing is outstanding. The run is complete and ungraded.**
 
 ---
 
@@ -706,4 +717,4 @@ Source clones: `T01` (aiohttp), `_src-redis-py`, `_src-undici`, `_src-bullmq`, `
 
 `reviews/PILOT-T01.md`, `RERUN-T01.md`, `RERUN-T01-v2.md`, `BATCH-T02-T06.md`, `BATCH-T07-T11.md`, `BATCH-T12-T16.md`, **`BATCH-T17-T20r.md`**, plus `BENCHMARK-AMENDMENTS.md` (index) and the numbered query/ruling pairs 018–026.
 
-Next to write: the Q-001 and Q-003 remediation records, then `READY-TO-GRADE.md`.
+**`READY-TO-GRADE.md` is written (2026-08-15).** The Q-001, Q-003 and A-005 remediation records live in §0 of this file rather than as separate batch documents.
