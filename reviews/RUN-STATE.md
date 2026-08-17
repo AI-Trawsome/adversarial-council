@@ -2,7 +2,45 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-15, at the close of the **A-005 paired re-run** — **A-005 COMPLETE, all 14 tasks closed.** The run is finished; `reviews/READY-TO-GRADE.md` is written. See §0.
+**Last updated:** 2026-08-17. The 25-task run is complete and `reviews/READY-TO-GRADE.md` is written. **GRADING IS NOW IN PROGRESS** under operator authorisation — see §0a. The final S1/S2 verdict is **not** computed and must not be until Michael has resolved the grading disputes and completed the blind ranking.
+
+---
+
+## 0a. GRADING PHASE — in progress (authorised 2026-08-17)
+
+The operator authorised grading per BENCHMARK.md §3. **S1/S2 remain uncomputed by instruction** until disputes are resolved and the blind ranking is returned.
+
+### Design
+
+- **Two independent graders per debate, one from each model** (§3.1: "Graded independently by both models"). 50 debates × 2 = **100 grader runs**. Claude graders are subagents; Codex graders are `codex exec` with the frozen output schema enforced via `--output-schema`, the same generation-time enforcement Arm B's critic received.
+- **Graders are blinded to the arm.** §3 does not require this, but the ledgers quote arm-labelled absolute paths **1049 times**, so an unblinded packet would announce the arm to every grader. Packets neutralise `-armA`/`-armB` → `-armX`, debate ids → `dbt-REDACTED`, seat hashes → `<seat>`. **The repro archives leak the same labels** — the first packet build was verified and found 820 of 2237 copied evidence files still carried them — so the copies are redacted the same way and repointed at the packet's own repro root, which keeps them runnable. Verified afterwards: **0 residual arm labels across all 50 packets.** The pristine archives are untouched under `_rerun2/<task>-arm{A,B}/repro/` for audit.
+- The runner's claimant labels `codex` (critic seat) and `claude` (defender seat) are **identical in both arms by construction** and leak nothing; every packet says so explicitly, so a grader does not mistake them for model identity.
+- Packet ids are `\<task\>-\<8hex\>` over a salt, so the two packets of a task are indistinguishable. The reverse map `_grading-PACKET-MAP.json` is orchestrator-only and is never placed inside a packet.
+
+### What the grader brief enforces
+
+Beyond §3's three metrics, the brief carries the operator's four additional instructions:
+
+1. **Ground truth is graded strictly** — the finding must name the failing *mechanism* at the correct *location*; `locationMatch` and `mechanismMatch` are recorded separately and `detected` requires both. Gesturing at the right file is not detection.
+2. **Verified-additional needs a failing test, a demonstrable repro, or Michael's confirmation.** Model attestation is explicitly not verification — nor is agreement between the two debaters. Anything substantive but unverifiable from the archive becomes `unverified-additional` / `michael-confirmation-required` rather than being credited or dismissed.
+3. **`notes` must be read, not just statuses.** Participants used `notes` for standing positions, deciding evidence, disagreements with settled fields the protocol gave them no way to amend, and negative sweeps. A status read without its notes misrepresents several findings in this dataset.
+4. **Defender-claimed findings are a protocol property.** The defender is the same model in both arms, so those findings are not evidence about the arm's critic; graders classify them on their merits but list their ids separately so the aggregate can be split.
+5. **Suite unrunnable → fall back to repro, then to Michael. Never assume tests pass.** An absent suite result is evidence about the environment and is never a reason to credit a finding.
+
+A false positive requires being able to say what is actually true instead; "cannot confirm" is `unverified-additional`, not a false positive. `weak` is not `unsupported` and graders are told not to conflate them.
+
+### Artefacts
+
+```
+_grading/<gid>/            blinded packet: LEDGER.json, context.md, repro/, PACKET.json, BRIEF-{claude,codex}.md
+_grading-out/claude/*.json  Claude grader scores
+_grading-out/codex/*.json   Codex grader scores
+_grading-PACKET-MAP.json    gid -> (task, arm) reverse map; ORCHESTRATOR-ONLY
+```
+
+### Outstanding in this phase
+
+1. Run all 100 graders. 2. Compile every disagreement into `reviews/GRADING-DISPUTES.md`. 3. Build the 10-task blind preference set into `reviews/BLIND-RANK.md`, arm labels and cost stripped. 4. **STOP** — S1/S2 wait on Michael.
 
 ---
 
