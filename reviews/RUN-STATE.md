@@ -29,6 +29,29 @@ Beyond §3's three metrics, the brief carries the operator's four additional ins
 
 A false positive requires being able to say what is actually true instead; "cannot confirm" is `unverified-additional`, not a false positive. `weak` is not `unsupported` and graders are told not to conflate them.
 
+### Packet defect found by a grader, corrected before the run proceeded
+
+The first grader to finish reported that **its ledger contained no `notes` field at all** — `grep -c '"notes"' LEDGER.json` returned 0. That is correct and it was a defect in the packets, not in the data: **the runner never persists message-level `notes` into `ledger.json`.** They exist only in the raw per-round message files. The operator's instruction — *graders must read the notes fields, not just statuses* — was therefore unsatisfiable as the packets were first built.
+
+Scale of what was missing: **248 messages across the 50 debates, 190 of them carrying notes**, including a single closing entry of 10,130 characters recording a full negative sweep and the reasoning for filing nothing.
+
+**Correction.** The raw message filenames differ by arm — Arm A's critic message is an injected mock file, Arm B's is the runner's echo — so shipping them raw would have leaked the arm as surely as the paths did. They are normalised into a single `MESSAGES.json` per packet with identical shape in both arms (`{round, side: critic|defender, notes}`), redacted the same way, and the brief now states plainly that notes are **not** in the ledger and names the file to read. All 50 packets rebuilt; **0 residual arm labels** re-verified. Grader runs made against the incomplete packets were **discarded and re-run**, not patched up.
+
+### A residual blinding limitation, stated rather than papered over
+
+Adding the notes reintroduces an arm signal that redaction cannot remove, because it is a real property of the messages rather than a label:
+
+| | critic messages | of which carry `notes` |
+|---|---|---|
+| **Arm A** | 66 | **65** |
+| **Arm B** | 58 | **1** |
+
+Defender messages carry notes in **100% of both arms** (66/66 and 58/58), so the defender side is neutral. The critic side is very nearly a perfect discriminator.
+
+**This is a direct consequence of the briefing asymmetry already recorded in §6, not a difference in critic quality.** Arm A's critic is a Claude subagent receiving a harness brief that tells it what `notes` is for; Arm B's critic is Codex receiving only the frozen `critique.md` plus schema enforcement, and nothing instructs it to use the field. The near-total absence of Arm B critic notes is that treatment difference showing up in the artefacts.
+
+**Disposition: the operator's instruction governs over my own optional safeguard.** Blinding was not required by §3 — I added it — and where it conflicts with an explicit instruction to read the notes, the instruction wins. The notes are included. The brief tells graders that how many notes a side wrote, or that one side wrote none, is **not a permitted inference route to the arm**, but that instruction is now the only control on this channel and it is not mechanically enforced. **The report must state that grader blinding is partial on the critic-notes channel.**
+
 ### Artefacts
 
 ```
