@@ -37,6 +37,39 @@ Scale of what was missing: **248 messages across the 50 debates, 190 of them car
 
 **Correction.** The raw message filenames differ by arm — Arm A's critic message is an injected mock file, Arm B's is the runner's echo — so shipping them raw would have leaked the arm as surely as the paths did. They are normalised into a single `MESSAGES.json` per packet with identical shape in both arms (`{round, side: critic|defender, notes}`), redacted the same way, and the brief now states plainly that notes are **not** in the ledger and names the file to read. All 50 packets rebuilt; **0 residual arm labels** re-verified. Grader runs made against the incomplete packets were **discarded and re-run**, not patched up.
 
+### Two further packet defects, both caught by graders, both corrected
+
+Graders found two more problems with my packet construction. Both are recorded because the
+pattern matters: **every defect in the grading harness so far was found by a grader, not by
+me**, and each was found only because the brief asks graders to verify rather than trust.
+
+**1. The redaction broke the evidence archive.** Reviewer scripts reference the arm's review
+repo **8274 times**. Rewriting those to `-armX` left them pointing at a path that resolves
+nowhere, so graders could not re-run the archives. Several rebuilt the reviewed tree from
+the buggy SHA themselves and re-ran everything against that — better verification than the
+brief demanded — but the archive was degraded by my own blinding. **Fixed:** each packet now
+carries `TREE`, a symlink to the *staged* repo, and arm-repo references are repointed there.
+The staged repo is byte-identical to every arm repo's reviewed tree — the run's tree-integrity
+check passed **50/50** on diff sha and file count — so the substitution changes nothing a
+grader reads.
+
+**2. Prose arm mentions survived the path redaction.** A grader reported `repro/MANIFEST.txt`
+and `run_all.sh` still naming the arm in their header text. The path regex matched
+`T02-armA` but not `Arm A`, `ARM B`, `arm_a` or `arm a` — **191 files, 276 occurrences**. Fixed
+by matching case-insensitively across separators. The packet check now asserts **zero**
+matches of `\barm[ _-]?[AB]\b` anywhere in any packet, and a pre-flight guard
+(`check-packets.mjs`) runs before any grader launches: 50 packets, 0 problems.
+
+**A rule the brief did not have.** Two graders independently hit findings with ledger status
+`withdrawn` and reported that the brief gave them no category — one classified it as verified
+and flagged the alternative rather than deciding silently. That is the right behaviour and it
+exposed a real gap. The brief now rules explicitly: a `withdrawn` finding was **abandoned by
+its own claimant**, counts as neither verified-additional nor false-positive, and is recorded
+under a new `withdrawn-excluded` classification with its own count. Terminal `open` findings
+are distinguished — those are live claims that ran out of rounds and are graded normally.
+
+**Every grader run made before these fixes was discarded and re-run**, not reconciled.
+
 ### A residual blinding limitation, stated rather than papered over
 
 Adding the notes reintroduces an arm signal that redaction cannot remove, because it is a real property of the messages rather than a label:
