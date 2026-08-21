@@ -116,9 +116,23 @@ and its criteria are listed above so the decision can be checked rather than tak
 would have been re-run. None were in that state — the deaths happened before the write, not
 during it.
 
-### Outstanding in this phase
+### Grading phase COMPLETE — awaiting Michael
 
-1. Run all 100 graders. 2. Compile every disagreement into `reviews/GRADING-DISPUTES.md`. 3. Build the 10-task blind preference set into `reviews/BLIND-RANK.md`, arm labels and cost stripped. 4. **STOP** — S1/S2 wait on Michael.
+**All 100 grader runs are done and both halves validate 50/50** (parseable, ids matched, every ledger finding covered). `reviews/GRADING-DISPUTES.md` and `reviews/BLIND-RANK.md` are written.
+
+**Agreement is high: the two models produced identical scores on 39 of 50 debates.** 11 debates carry a disagreement, 25 items, **3 of them blocking** (they move S1 or S2). One debate splits on ground-truth detection itself; the other two blocking items are one finding-classification dispute and the count that follows from it.
+
+**Three more harness defects were found during grading — all three by graders, none by me.** (1) One Codex grade came back summary-only: internally consistent counts but an empty `findings` array, because my runner installs the schema-enforced last message over anything richer the model wrote itself. Caught by the coverage check, re-run, 8/8 entries. (2) `T23-staged` had **drifted to contain the maintainer's fix**; a grader noticed because the finding it was scoring suddenly looked like a false positive. Swept all 25 — **only T23**, and both its arm repos still hash `2de59ce4…` as recorded at close, so **no debate was affected**. Restored and re-graded. (3) Arm labels survived in **machine-generated filenames** (a v8 compile-cache mangles absolute paths into names) — my scan checked file contents only. Two files, one packet; purged, guard extended to filenames, both graders for that packet re-run. **The re-grade returned identical scores, so the breach demonstrably moved nothing** — recorded rather than left as an open worry.
+
+**Not computed, by instruction:** the S1/S2 verdict. The disputes file records both graders' scores per debate and states what the table already shows — 23 debates where both graders agree the ground truth was detected, 1 split, and **5 of those agreed detections resting solely on a defender-claimed finding** — without aggregating to a verdict.
+
+**Blind to arm on purpose, twice over.** The disputes are presented under opaque packet ids: Michael is resolving *scoring rules*, and which arm produced a finding is not an input to whether it names the maintainer's mechanism. The blind-rank set strips arm labels, cost, debate ids and paths, and its presentation order was **forced to 5/5** after a free coin landed 7/3 — an imbalanced marginal would let position correlate with arm across the set. The key lives outside `reviews/`.
+
+### Outstanding — blocked on Michael
+
+1. Resolve the 3 blocking disputes and the 7 systemic rulings (R1–R7) in `GRADING-DISPUTES.md`.
+2. Complete the blind ranking in `BLIND-RANK.md`.
+3. **Only then** compute S1/S2, apply the packet→arm mapping, and write the final report.
 
 ---
 
