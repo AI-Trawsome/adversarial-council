@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-17. The 25-task run is complete and `reviews/READY-TO-GRADE.md` is written. **GRADING IS NOW IN PROGRESS** under operator authorisation — see §0a. The final S1/S2 verdict is **not** computed and must not be until Michael has resolved the grading disputes and completed the blind ranking.
+**Last updated:** 2026-08-21. The 25-task run is complete and `reviews/READY-TO-GRADE.md` is written. **GRADING IS NOW IN PROGRESS** under operator authorisation — see §0a. The final S1/S2 verdict is **not** computed and must not be until Michael has resolved the grading disputes and completed the blind ranking.
 
 ---
 
@@ -93,6 +93,28 @@ _grading-out/claude/*.json  Claude grader scores
 _grading-out/codex/*.json   Codex grader scores
 _grading-PACKET-MAP.json    gid -> (task, arm) reverse map; ORCHESTRATOR-ONLY
 ```
+
+### Usage-limit interruption, 2026-08-17 → resumed 2026-08-21
+
+The Codex grader half **completed: 50/50, 0 failures.** The Claude half was cut off mid-flight
+when the account hit its weekly limit; 18 of 50 agents died, several with the output file
+unwritten after the verification work was already done.
+
+**Resume policy, and why it is not "re-run everything".** All 32 surviving Claude grades were
+validated mechanically before being trusted, not merely counted: parseable JSON, `gradingId`
+matching the packet, every required key present, all count fields numeric, **every finding in
+the packet's ledger covered by an entry**, file newer than the packet rebuild, and newer than
+the final brief regeneration. All 32 passed on every check and all 32 carry the
+`withdrawnExcluded` field, so they ran under the final brief including the withdrawn-findings
+rule. **Only the 18 missing were re-run.** Re-running the 32 valid grades would have consumed
+roughly two-thirds of the remaining budget to reproduce results already verified equivalent —
+the wrong trade immediately after a usage limit bit. The validator is at `/tmp/validate-claude.mjs`
+and its criteria are listed above so the decision can be checked rather than taken on trust.
+
+**Partial-write risk was specifically checked**, because several agents died at the
+"now writing the grading output" step: any zero-byte, unparseable, or finding-incomplete file
+would have been re-run. None were in that state — the deaths happened before the write, not
+during it.
 
 ### Outstanding in this phase
 
