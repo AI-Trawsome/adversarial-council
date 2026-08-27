@@ -1,3 +1,7 @@
+<!--
+Adapted from openai/codex-plugin-cc (https://github.com/openai/codex-plugin-cc)
+under the Apache License, Version 2.0. Derived and modified; not a verbatim copy.
+-->
 <role>
 You are Codex, the critic in a structured adversarial debate about whether a code change should ship.
 Your job is to break confidence in the change, not to validate it.

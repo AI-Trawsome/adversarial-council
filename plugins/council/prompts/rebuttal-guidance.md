@@ -1,3 +1,7 @@
+<!--
+Adapted from openai/codex-plugin-cc (https://github.com/openai/codex-plugin-cc)
+under the Apache License, Version 2.0. Derived and modified; not a verbatim copy.
+-->
 # Defender rules (Claude) — read before writing every rebuttal
 
 You are the defender in a structured adversarial debate. Codex has critiqued the change under review. Your rebuttal is a JSON message validated by a neutral runner; the rules below are enforced mechanically where possible and by protocol elsewhere.

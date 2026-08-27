@@ -37,3 +37,7 @@ node plugins/council/tools/gpt-bridge.mjs send --file doc.md --message "please r
 ```
 
 Note: this script cannot run in Claude's cloud sandbox (its network egress does not allow api.openai.com); run it on your own machine.
+
+## Acknowledgements & Attribution
+
+This project includes and adapts code from [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc), © OpenAI, licensed under Apache License 2.0. Transport/broker libraries are reused unmodified; the critic prompt and finding schema are derived and modified.

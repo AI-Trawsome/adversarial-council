@@ -1,4 +1,5 @@
 {
+  "$comment": "Adapted from openai/codex-plugin-cc (https://github.com/openai/codex-plugin-cc) under Apache License 2.0. Derived and modified; not a verbatim copy.",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "CouncilMessage",
   "type": "object",
