@@ -2,7 +2,7 @@
 
 **Purpose.** This file is the resumption anchor. If the orchestrator's context is compacted or the session restarts, reading this file plus `reviews/BENCHMARK-AMENDMENTS.md` is sufficient to resume losslessly. **Trust disk over memory.** Update this file after every task closes.
 
-**Last updated:** 2026-08-21. The 25-task run is complete and `reviews/READY-TO-GRADE.md` is written. **GRADING IS NOW IN PROGRESS** under operator authorisation — see §0a. The final S1/S2 verdict is **not** computed and must not be until Michael has resolved the grading disputes and completed the blind ranking.
+**Last updated:** 2026-08-27. **THE RUN IS COMPLETE AND GRADED.** See `reviews/BENCHMARK-REPORT.md`. The 25-task run is complete and `reviews/READY-TO-GRADE.md` is written. **GRADING IS NOW IN PROGRESS** under operator authorisation — see §0a. The final S1/S2 verdict is **not** computed and must not be until Michael has resolved the grading disputes and completed the blind ranking.
 
 ---
 
@@ -128,11 +128,24 @@ during it.
 
 **Blind to arm on purpose, twice over.** The disputes are presented under opaque packet ids: Michael is resolving *scoring rules*, and which arm produced a finding is not an input to whether it names the maintainer's mechanism. The blind-rank set strips arm labels, cost, debate ids and paths, and its presentation order was **forced to 5/5** after a free coin landed 7/3 — an imbalanced marginal would let position correlate with arm across the set. The key lives outside `reviews/`.
 
-### Outstanding — blocked on Michael
+### GRADING ADJUDICATED AND CLOSED (2026-08-27)
 
-1. Resolve the 3 blocking disputes and the 7 systemic rulings (R1–R7) in `GRADING-DISPUTES.md`.
-2. Complete the blind ranking in `BLIND-RANK.md`.
-3. **Only then** compute S1/S2, apply the packet→arm mapping, and write the final report.
+Michael resolved all seven systemic rulings (R1–R7) and the three blocking disputes interactively, blind to arm, and completed the blind ranking. Rulings and both graders' full reasoning are in `GRADING-DISPUTES.md`; the resolved scores are `reviews/_final-scores.json`.
+
+**Final verdicts — `reviews/BENCHMARK-REPORT.md`:**
+
+- **S1 FAIL.** Arm A detected **14**, Arm B **9** (B is 35.7% *below* A, against a requirement to exceed by ≥20%). Critic-only: **14 vs 4** — all five of Arm B's defender-assisted detections are in Arm B.
+- **S2 PASS**, vacuously: **0 false positives in both arms** across 231 findings. Reported with the R3 tally beside it (58 classifications across 21 tasks carry a refuted clause over a demonstrated core), because that is the figure most likely to move under a different ruling.
+- **S3 PASS.** Median B/A **0.28×** against the 3.0× ceiling; sensitivity N=20 unchanged at 0.28×.
+- **Blind preference: Arm A 9 / 10.**
+
+**The pre-registered interpretation applies as written:** S1 fails → simplify the architecture; the council does not proceed to Solve/Challenge modes; self-critique ships instead.
+
+**Two limitations the report leads with rather than buries.** The arms differ by more than critic identity — Arm A's critic receives a harness brief with protocol coaching that Arm B's Codex critic never sees, and that asymmetry favours Arm A on exactly the axis S1 measures. And five of the misses were failures to draw a conclusion from evidence already collected, not failures to search — so a successor design that adds search capacity would be treating the wrong failure.
+
+### Nothing outstanding
+
+~~1. Resolve disputes. 2. Rank. 3. Compute S1/S2 and report.~~ **All done 2026-08-27.** The benchmark is finished.
 
 ---
 

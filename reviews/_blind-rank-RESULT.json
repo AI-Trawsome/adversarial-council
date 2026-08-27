@@ -1,0 +1,68 @@
+{
+  "preferences": {
+    "T06": 1,
+    "T05": 2,
+    "T07": 1,
+    "T12": 2,
+    "T11": 2,
+    "T24": 1,
+    "T10": 1,
+    "T16": 2,
+    "T14": 1,
+    "T04": 1
+  },
+  "armA": 9,
+  "armB": 1,
+  "detail": [
+    {
+      "task": "T06",
+      "verdict1": "B",
+      "verdict2": "A"
+    },
+    {
+      "task": "T05",
+      "verdict1": "B",
+      "verdict2": "A"
+    },
+    {
+      "task": "T07",
+      "verdict1": "A",
+      "verdict2": "B"
+    },
+    {
+      "task": "T12",
+      "verdict1": "B",
+      "verdict2": "A"
+    },
+    {
+      "task": "T11",
+      "verdict1": "B",
+      "verdict2": "A"
+    },
+    {
+      "task": "T24",
+      "verdict1": "A",
+      "verdict2": "B"
+    },
+    {
+      "task": "T10",
+      "verdict1": "A",
+      "verdict2": "B"
+    },
+    {
+      "task": "T16",
+      "verdict1": "B",
+      "verdict2": "A"
+    },
+    {
+      "task": "T14",
+      "verdict1": "A",
+      "verdict2": "B"
+    },
+    {
+      "task": "T04",
+      "verdict1": "A",
+      "verdict2": "B"
+    }
+  ]
+}
